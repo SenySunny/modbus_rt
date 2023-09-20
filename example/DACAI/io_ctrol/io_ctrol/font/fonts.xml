@@ -1,0 +1,32 @@
+<fonts ttf="wqyMicroHei.ttf">
+  <font id="0" type="2" name="ASC_CHS_8" width="4" height="8"/>
+  <font id="1" type="2" name="ASC_CHS_10" width="5" height="10"/>
+  <font id="2" type="2" name="ASC_CHS_12" width="6" height="12"/>
+  <font id="3" type="2" name="ASC_CHS_14" width="7" height="14"/>
+  <font id="4" type="2" name="ASC_CHS_16" width="8" height="16"/>
+  <font id="5" type="2" name="ASC_CHS_18" width="9" height="18"/>
+  <font id="6" type="2" name="ASC_CHS_20" width="10" height="20"/>
+  <font id="7" type="2" name="ASC_CHS_22" width="11" height="22"/>
+  <font id="8" type="2" name="ASC_CHS_24" width="12" height="24"/>
+  <font id="9" type="2" name="ASC_CHS_26" width="13" height="26"/>
+  <font id="10" type="2" name="ASC_CHS_28" width="14" height="28"/>
+  <font id="11" type="2" name="ASC_CHS_30" width="15" height="30"/>
+  <font id="12" type="2" name="ASC_CHS_32" width="16" height="32"/>
+  <font id="13" type="2" name="ASC_CHS_36" width="18" height="36"/>
+  <font id="14" type="2" name="ASC_CHS_40" width="20" height="40"/>
+  <font id="15" type="2" name="ASC_CHS_44" width="22" height="44"/>
+  <font id="16" type="2" name="ASC_CHS_48" width="24" height="48"/>
+  <font id="17" type="2" name="ASC_CHS_52" width="26" height="52"/>
+  <font id="18" type="2" name="ASC_CHS_56" width="28" height="56"/>
+  <font id="19" type="2" name="ASC_CHS_60" width="30" height="60"/>
+  <font id="20" type="2" name="ASC_CHS_64" width="32" height="64"/>
+  <font id="21" type="2" name="ASC_CHS_80" width="40" height="80"/>
+  <font id="22" type="2" name="ASC_CHS_96" width="48" height="96"/>
+  <font id="23" type="2" name="ASC_CHS_112" width="56" height="112"/>
+  <font id="24" type="2" name="ASC_CHS_128" width="64" height="128"/>
+  <font id="25" type="2" name="ASC_CHS_144" width="72" height="144"/>
+  <font id="26" type="2" name="ASC_CHS_160" width="80" height="160"/>
+  <font id="27" type="2" name="ASC_CHS_176" width="88" height="176"/>
+  <font id="28" type="2" name="ASC_CHS_192" width="96" height="192"/>
+  <font id="29" type="2" name="ASC_CHS_200" width="100" height="200"/>
+</fonts>

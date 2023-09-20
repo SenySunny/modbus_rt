@@ -1,0 +1,13 @@
+<Resource>
+    <pages>
+        <page name="Screen0" id="0" />
+    </pages>
+    <images>
+        <image id="0" url="e:\08_github_seny\modbus_rt\example\dacai\io_ctrol\io_ctrol\images\背景.jpg" effect_width="240" effect_height="320" />
+        <image id="1" url="e:\08_github_seny\modbus_rt\example\dacai\io_ctrol\io_ctrol\images\灯灭.jpg" effect_width="40" effect_height="40" />
+        <image id="2" url="e:\08_github_seny\modbus_rt\example\dacai\io_ctrol\io_ctrol\images\灯亮.jpg" effect_width="40" effect_height="40" />
+        <image id="3" url="e:\08_github_seny\modbus_rt\example\dacai\io_ctrol\io_ctrol\images\开关关.jpg" effect_width="36" effect_height="70" />
+        <image id="4" url="e:\08_github_seny\modbus_rt\example\dacai\io_ctrol\io_ctrol\images\开关开.jpg" effect_width="36" effect_height="70" />
+    </images>
+    <waves />
+</Resource>

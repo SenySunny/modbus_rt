@@ -1,0 +1,8 @@
+﻿#ifndef PIKA_CONFIG_H
+#define PIKA_CONFIG_H
+
+#define PIKA_UNBUFFERED_ENABLE      1
+
+#define PIKA_READ_FILE_BUFF_SIZE 1024 * 100
+
+#endif // PIKA_CONFIG_H

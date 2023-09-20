@@ -1,0 +1,11 @@
+menu "C/C++ and POSIX layer"
+
+config RT_LIBC_DEFAULT_TIMEZONE
+    int "Set the default time zone (UTC+)"
+    range -12 12
+    default 8
+
+source "$RTT_DIR/components/libc/posix/Kconfig"
+source "$RTT_DIR/components/libc/cplusplus/Kconfig"
+
+endmenu
