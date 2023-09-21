@@ -140,7 +140,7 @@ extern "C" {
  */
 #if (MODBUS_RTU_SLAVE_ENABLE) || (MODBUS_TCP_SLAVE_ENABLE)
     #ifndef SLAVE_DATA_DEVICE_BINDING
-        #define     SLAVE_DATA_DEVICE_BINDING             0
+        #define     SLAVE_DATA_DEVICE_BINDING             1
     #endif
 #endif
 
