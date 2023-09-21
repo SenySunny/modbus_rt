@@ -145,6 +145,7 @@ void modbus_rt_serial_close(int serial) {
 void modbus_rt_serial_send(int serial, void *buf, int len) {
     struct sp_port *serial_port = modbus_rt_serial_get_dev(serial);
     sp_blocking_write(serial_port, buf, len, 0);
+    sp_flush(serial_port,SP_BUF_BOTH);
 }
 
 int modbus_rt_serial_receive(int serial, void *buf, int bufsz, const int timeout, const int bytes_timeout) {
