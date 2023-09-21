@@ -650,18 +650,8 @@ static void modbus_tcp_master_entry(void *parameter) {
                 continue;
             }
             read_len = recv(dev->sock, read_buf, AGILE_MODBUS_MAX_ADU_LENGTH, 0);       //尝试读取数据
-            if (0 > read_len) {    
-                //系统错误，线程异常退出
-                printf("recv:0 > read_le.\n");
-                /* 结束线程运行标志 */
-                modbus_rt_mutex_lock(&(dev->mutex));
-                dev->thread_flag = -1;           //线程运行
-                modbus_rt_mutex_unlock(&(dev->mutex));
-
-                modbus_rt_sem_post(&(dev->sem));
-                return ;
-            } else if (0 == read_len) {     
-                //等于0表示服务端断开，下次会短线自动重连
+            if (0 >= read_len) {
+                //接收异常，可能是服务单断开连接
                 modbus_rt_net_close(dev->sock);
                 dev->sock = 0;
                 continue;
