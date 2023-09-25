@@ -23,19 +23,15 @@
 
 #define NET_ADD_OFFSET           8
 
-
-
 #define NETDEV_MAC_MAX_LEN    6
 #define NETDEV_IMEI_MAX_LEN   8
 
-#ifdef PKG_USING_WIZNET
 //此处主要目的是为了防止在DHCP模式下，DHCP没有成功，这个时候想要修改静态IP时使用
 int net_restart_status = 0;     //置1表示重启w5500。重启完成后归零,详细见net_restart函数
 
 extern struct rt_work *dhcp_work;
 extern int wiz_socket_init(void);
 extern void DHCP_stop(void);
-#endif
 
 /**
  @verbatim
@@ -100,6 +96,8 @@ void net_save_addr_info( void ) {
         g_net_info.addr_info->ip_addr = netdev->ip_addr;
         g_net_info.addr_info->netmask = netdev->netmask;
         g_net_info.addr_info->gw = netdev->gw;
+        g_net_info.addr_info->dns_servers[0] = netdev->dns_servers[0];
+        g_net_info.addr_info->dns_servers[1] = netdev->dns_servers[1];
         int offset = NET_ADD_OFFSET * 2;
         uint8_t *buf_temp = rt_calloc(1,FLASH_PAGE_SIZE);
         const struct fal_partition * dev_partition = fal_partition_find("sp_reg");
@@ -141,8 +139,21 @@ static void net_restart(int dhcp_status) {
 }
 
 
+
 tcp_modbus_device_t ts = NULL;
 tcp_modbus_device_t tsu = NULL;
+int tcp_slave_done_callback(agile_modbus_t *ctx, int slave, int function,int addr, int quantity) {
+    (void)(ctx);
+    rt_kprintf("tcp_slave done. addr: %d, function: %d, addr: %d, quantity: %d.\n", slave, function, addr, quantity);
+    return 0;
+}
+
+int udp_slave_done_callback(agile_modbus_t *ctx, int slave, int function,int addr, int quantity) {
+    (void)(ctx);
+    rt_kprintf("udp_slave done. addr: %d, function: %d, addr: %d, quantity: %d.\n", slave, function, addr, quantity);
+    return 0;
+}
+
 //清除网络应用程序的缓存
 int net_tcpiptask_clear( void ) {
     int ret = MODBUS_RT_EOK;
@@ -169,15 +180,19 @@ int net_tcpiptask_clear( void ) {
 int modbus_tcp_slave_open_test( void ) {
     int ret = MODBUS_RT_EOK;
     if(NULL == (ts = modbus_tcp(MODBUS_SLAVE))) {
-        printf("modbus_tcp create error.\n");
+        rt_kprintf("modbus_tcp create error.\n");
         return -MODBUS_RT_ERROR;
     }
     if(MODBUS_RT_EOK != (ret = modbus_tcp_set_net(ts, inet_ntoa(g_net_info.netdev->ip_addr), 502, SOCK_STREAM))) {
-        printf("modbus_tco_set_net error, code is: %d.\n", ret);
+        rt_kprintf("modbus_tco_set_net error, code is: %d.\n", ret);
+        return -MODBUS_RT_ERROR;
+    }
+    if(MODBUS_RT_EOK != (ret = modbus_tcp_set_done_callback(ts,tcp_slave_done_callback))) {
+        rt_kprintf("modbus_tcp_set_done_callback error, code is: %d.\n", ret);
         return -MODBUS_RT_ERROR;
     }
     if(MODBUS_RT_EOK != (ret = modbus_tcp_open(ts))) {
-        printf("modbus_tcp_open error, code is: %d.\n", ret);
+        rt_kprintf("modbus_tcp_open error, code is: %d.\n", ret);
         return -MODBUS_RT_ERROR;
     }
     return ret;
@@ -186,19 +201,23 @@ int modbus_tcp_slave_open_test( void ) {
 int modbus_tcp_slave_for_udp_open_test( void ) {
     int ret = MODBUS_RT_EOK;
     if(NULL == (tsu = modbus_tcp(MODBUS_SLAVE))) {
-        printf("modbus_tcp create error.\n");
+        rt_kprintf("modbus_tcp create error.\n");
         return -MODBUS_RT_ERROR;
     }
     if(MODBUS_RT_EOK != (ret = modbus_tcp_set_net(tsu, NULL, 502, SOCK_DGRAM))) {
-        printf("modbus_tcp_set_net error, code is: %d.\n", ret);
+        rt_kprintf("modbus_tcp_set_net error, code is: %d.\n", ret);
         return -MODBUS_RT_ERROR;
     }
     if(MODBUS_RT_EOK != (ret = modbus_tcp_set_strict(tsu, 0))) {
-        printf("modbus_tcp_set_net error, code is: %d.\n", ret);
+        rt_kprintf("modbus_tcp_set_net error, code is: %d.\n", ret);
+        return -MODBUS_RT_ERROR;
+    }
+    if(MODBUS_RT_EOK != (ret = modbus_tcp_set_done_callback(tsu,udp_slave_done_callback))) {
+        rt_kprintf("modbus_tcp_set_done_callback error, code is: %d.\n", ret);
         return -MODBUS_RT_ERROR;
     }
     if(MODBUS_RT_EOK != (ret = modbus_tcp_open(tsu))) {
-        printf("modbus_tcp_open error, code is: %d.\n", ret);
+        rt_kprintf("modbus_tcp_open error, code is: %d.\n", ret);
         return -MODBUS_RT_ERROR;
     }
     return ret;
@@ -210,18 +229,18 @@ int net_tcpiptask_restart( void ) {
     if(MODBUS_RT_EOK != (ret = modbus_tcp_slave_open_test())) {
         return ret;
     }
-    printf("modbus_tcp_slave_open success.\n");
+    rt_kprintf("modbus_tcp_slave_open success.\n");
     if(MODBUS_RT_EOK != (ret = modbus_tcp_slave_for_udp_open_test())) {
         return ret;
     }
-    printf("modbus_tcp_slave_for_udp_open success.\n");
+    rt_kprintf("modbus_tcp_slave_for_udp_open success.\n");
     mem_use_print();
     return ret;
 }
 
 void net_task_entry(void *parameter) {
     g_net_info.up_flag = 0;                                 //上电初始化，表示未连接到网络上
-    g_net_info.netdev = netdev_get_by_name("W5500");           //获取网卡信息
+    g_net_info.netdev = netdev_get_by_name(NET_DEV_NAME);           //获取网卡信息
     if(NULL == g_net_info.netdev) {                         //网卡信息获取失败，直接退出
         rt_kprintf("netdev is NULL\r\n");
         return ;
@@ -437,6 +456,20 @@ int net_set_dhcp( void ) {
     return RT_EOK;
 }
 
+static int net_task_init(void){
+    //启动网络线程，网络连接成功后可以创建modbus tcp slave for udp
+    rt_thread_t net_task = rt_thread_create("net_task",net_task_entry, NULL, 4096, 12, 10);
+    if (net_task != RT_NULL) {
+        rt_thread_startup(net_task);
+    } else {
+        LOG_E("net_task thread initialization failed!");
+    }
+    return 0;
+}
+INIT_APP_EXPORT(net_task_init);
+
+#ifdef FINSH_USING_MSH
+#include <finsh.h>
 static int set_ip(int argc, char **argv) {
     rt_base_t level;
     rt_err_t ret = RT_EOK;
@@ -511,8 +544,6 @@ static int net_stop(int argc, char **argv) {
     return ret;
 }
 
-#ifdef FINSH_USING_MSH
-#include <finsh.h>
 MSH_CMD_EXPORT(set_ip,      netdev set ip);
 MSH_CMD_EXPORT(set_dhcp,    netdev set dhcp);
 MSH_CMD_EXPORT(net_start,   net start);

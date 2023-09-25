@@ -166,8 +166,11 @@ extern "C" {
     #define TCP_MODBUS_NUMS_ENABLE                  1
 #endif
 
-#ifndef TCP_MODBUS_NUMS
-    #define TCP_MODBUS_NUMS                     6
+#if MODBUS_TCP_SLAVE_ENABLE
+    #ifndef TCP_MODBUS_NUMS
+        #define TCP_MODBUS_NUMS                     6
+    #endif
+    extern int tcp_modbus_nums;
 #endif
 
 /**
@@ -205,7 +208,6 @@ extern "C" {
  */
 #if MODBUS_TCP_SLAVE_ENABLE
     #define SOCKET_CONNECT_NUMS         (5)     //最多支持连接到modbus tcp slave上的master的数量
-    extern int tcp_modbus_nums;
 #endif
 
 /**

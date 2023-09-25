@@ -10,7 +10,6 @@
 
 #include <rtthread.h>
 #include "modbus_rtu.h"
-#include "net_task.h"
 
 #define DBG_TAG "main"
 #define DBG_LVL DBG_LOG
@@ -19,6 +18,12 @@
 #define    SERIAL_NAME      "uart2"
 
 rtu_modbus_device_t rs = NULL;
+int rtu_slave_done_callback(agile_modbus_t *ctx, int slave, int function,int addr, int quantity) {
+    (void)(ctx);
+    rt_kprintf("rtu_slave done. addr: %d, function: %d, addr: %d, quantity: %d.\n", slave, function, addr, quantity);
+    return 0;
+}
+
 int modbus_rtu_slave_open_test( void ) {
     int ret = MODBUS_RT_EOK;
     if(NULL == (rs = modbus_rtu(MODBUS_SLAVE))) {
@@ -27,6 +32,10 @@ int modbus_rtu_slave_open_test( void ) {
     }
     if(MODBUS_RT_EOK != (ret = modbus_rtu_set_serial(rs, SERIAL_NAME, 115200, 8, 'N', 1, 0))) {
         rt_kprintf("modbus_rtu_set_serial error, code is: %d.\n", ret);
+        return -MODBUS_RT_ERROR;
+    }
+    if(MODBUS_RT_EOK != (ret = modbus_rtu_set_done_callback(rs,rtu_slave_done_callback))) {
+        rt_kprintf("modbus_rtu_set_done_callback error, code is: %d.\n", ret);
         return -MODBUS_RT_ERROR;
     }
     if(MODBUS_RT_EOK != (ret = modbus_rtu_open(rs))) {
@@ -43,19 +52,11 @@ int main(void) {
         return ret;
     }
     rt_kprintf("modbus_rtu_slave_open success.\n");
-
-    //启动网络线程，网络连接成功后可以创建modbus tcp slave for udp
-    rt_thread_t net_task = rt_thread_create("net_task",net_task_entry, NULL, 8192, 12, 10);
-    if (net_task != RT_NULL)
-    {
-        rt_thread_startup(net_task);
-    }
     while (1) {
         rt_thread_mdelay(1000);
     }
     return RT_EOK;
 }
-
 
 #ifdef FINSH_USING_MSH
 #include <finsh.h>

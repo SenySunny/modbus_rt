@@ -16,7 +16,7 @@
 
 #include <board.h>
 
-#define    DEV_NAME                 "apm32_io"
+#define    DEV_NAME                 "apm_io"
 
 #define     FLASH_PAGE_SIZE         0x800U
 
