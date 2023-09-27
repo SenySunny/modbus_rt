@@ -6,7 +6,6 @@ void *modbus_rt_malloc(size_t size) {
 }
 
 void *modbus_rt_calloc(size_t num, size_t size) {
-    (void)(num);
     return rt_calloc(num, size);
 }
 
