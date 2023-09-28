@@ -205,6 +205,8 @@ sudo ./pikapython test.py
 
 ​		目前查找和修改设备IP上位机目前只提供window平台，linux平台暂时未提供，使用方法将建演示视频。
 
+![device_find](img/device_find.png)
+
 ##### 4、FreeRTOS平台
 
 ​	FreeRTOS平台，我们计划用了PikaPython的开源硬件 PikaPython-OpenHardware作为demo测试平台，该开发板基于ESP32-S3平台，本身又配置RS485接口，另外网络部分可以用wifi进行测试。
