@@ -31,6 +31,7 @@
 2. 在基于windows，linux（理论上也可以运行在macos系统）上的串口通信部分采用了开源的libserialport串口通信库，采用加载动态链接库的形式调用，RTOS部分串口通信代码为自己编写。
 3. modbus_rt的网络通信部分，采用BSD Socket接口，所以理论上只要可以支持BSD Socket的平台都可以使用，需要注意的是：为了实现多个socket的阻塞问题，采用了IO多路复用接口（select机制），所以需要系统支持select接口。windows和linux本身就都支持，RTOS系统需要确保系统已经移植了BSD socket并且支持select。
 4. modbus_rt的应用实现层采用多线程，在windows，linux，macos等操作系统上采用了pthread多线程。linux和macos默认支持pthread，windows需要自己加载和安装pthread库。
+5. 本项目参考和借鉴使用了包括但不仅限于以下开源的项目：agile_modbus,  libserialport, PikaPython, PikaPython-OpenHardware, RT-Thread, FreeRTOS等等(如还有没有标注的项目，请注明)。采用和借鉴了的开源项目地址详见最后感谢栏，欢迎大家点赞相互交流学习。感谢以上的开源项目作者。
 
 ### 二、测试与使用
 
@@ -413,6 +414,6 @@ sudo ./pikapython tcp2rtu_dtu.py
 2.  [libserialport(一款跨平台的串口库): https://github.com/sigrokproject/libserialport](https://github.com/sigrokproject/libserialport)
 3.  [PikaPython(一个完全重写的超轻量级 python 引擎): https://github.com/pikasTech/PikaPython](https://github.com/pikasTech/PikaPython)
 4.  [ PikaPython-OpenHardware(一款验证pikapython的ESP32-S3开发板): https://gitee.com/Lyon1998/pikapython_openhardware](https://gitee.com/Lyon1998/pikapython_openhardware)
-5.  [rt-thread(一款以开源的物联网操作系统): https://github.com/RT-Thread/rt-thread](https://github.com/RT-Thread/rt-thread)
+5.  [RT-Thread(一款以开源的物联网操作系统): https://github.com/RT-Thread/rt-thread](https://github.com/RT-Thread/rt-thread)
 6.  [FreeRTOS(一款微控制器的开源实时操作系统): https://github.com/FreeRTOS/FreeRTOS](https://github.com/FreeRTOS/FreeRTOS)
 
