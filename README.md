@@ -61,6 +61,7 @@
 ​		这里我们刷了野火提供的最新的debian桌面版本的固件。确保安装了git, cmake和gcc程序，如果没有安装可以通过```sudo apt install cmake``` 和```sudo apt install git```来安装（由于我的开发板系统安装在EMMC中，而flash空间不够，所以代码是在tf卡中编译的，我把tf卡挂载到了```/home/cat/sdcard```目录下，需要注意给```/home/cat/sdcard```目录操作权限）
 
 ```shell
+sudo mount /dev/mmcblk1 /home/cat/sdcard
 sudo chown -R cat /home/cat/sdcard
 chmod -R 755 /home/cat/sdcard
 ```
@@ -221,7 +222,7 @@ PikaPython-OpenHardware的开源地址为：[https://gitee.com/Lyon1998/pikapyth
 
 ![TIA1](img/TIA1.png)![TIA1](img/TIA2.png)
 
-2. S7-1214C运行modbus TCP slave案例，利用windows或者linux上运行的mobus_rt 运行的master操作西门子PLC的外设（包括I Q IW和自定义的保持寄存器），详细可以参考演示视频。
+2. S7-1214C运行modbus TCP slave案例，利用windows或者linux上运行的mobus_rt 运行的master操作西门子PLC的外设（包括I Q IW和自定义的保持寄存器，I对饮的1x寄存器，Q对应的0x寄存器，IW对应的3x寄存器），详细可以参考演示视频。
 
 ![TIA3](img/TIA3.png)
 
@@ -255,7 +256,73 @@ PikaPython-OpenHardware的开源地址为：[https://gitee.com/Lyon1998/pikapyth
 
 ​	这里主要验证利用modbus_rt的回调函数功能实现dtu转换功能。
 
+1. 首先进入linux平台下的build目录：
 
+```shell
+cd ~/sdcard/modbus_rt/example/linux/pikapython_test/build
+```
+
+2. 创建一个```tcp2rtu_dtu.py``` 文件，并复制如下代码：
+
+```python
+import modbus_rt
+import modbus_rt_defines as cst
+
+serial_name = "/dev/ttyUSB0"
+ip_addr = ""
+
+rm = modbus_rt.rtu(cst.MASTER)
+rm.set_serial(serial_name)
+rm.open()
+ts = modbus_rt.tcp()
+ts.set_net(ip_addr, 502, cst.SOCK_STREAM)
+def pre_call(evt) :
+    slave = evt.slave
+    function = evt.function
+    addr = evt.addr
+    quantity = evt.quantity
+    if cst.READ_HOLDING_REGISTERS == function: 
+        data = rm.excuse(slave, function, addr, quantity)
+        ts.excuse(cst.WRITE, cst.REGISTERS, addr, quantity, data)
+    elif cst.READ_DISCRETE_INPUTS == function: 
+        data = rm.excuse(slave, function, addr, quantity)
+        ts.excuse(cst.WRITE, cst.INPUTS, addr, quantity, data)
+def done_call(evt) :
+    slave = evt.slave
+    function = evt.function
+    addr = evt.addr
+    quantity = evt.quantity
+    if cst.WRITE_SINGLE_COIL == function: 
+        data = ts.excuse(cst.READ, cst.CIOLS, addr, 1)  
+        rm.excuse(slave, function, addr, data[0])  
+    elif cst.WRITE_SINGLE_REGISTER == function: 
+        data = ts.excuse(cst.READ, cst.REGISTERS, addr, 1) 
+        rm.excuse(slave, function, addr, data[0])  
+    elif cst.WRITE_MULTIPLE_COILS == function: 
+        data = ts.excuse(cst.READ, cst.CIOLS, addr, quantity)  
+        rm.excuse(slave, function, addr, quantity, data)  
+    elif cst.WRITE_MULTIPLE_REGISTERS == function: 
+        data = ts.excuse(0, cst.REGISTERS, addr, quantity)  
+        rm.excuse(slave, function, addr, quantity, data)    
+ts.add_block("A", 0, 20000, 10)
+ts.add_block("B", 1, 10000, 16)
+ts.add_block("C", 4, 0, 10)
+ts.set_strict(0)
+ts.set_pre_ans_callback(pre_call)
+ts.set_done_callback(done_call)
+ts.open()
+
+```
+
+> ​        我们可以看到，代码主要的功能便是创建一个tcp slave和rtu master，并把其写线圈和保持寄存器的指令转化为对rtu master对外的操作。并在接收到读保持寄存器和离散输入寄存器指令的之后，首先通过rtu master获取对应地址的设备的信息，用来更新自己的寄存器信息，以确保读取到的信息为对用的rtu slave设备的信息。
+
+3. 我们运行对应的```.py```文件
+
+```
+sudo ./pikapython tcp2rtu_dtu.py
+```
+
+4. 之后我们便可以通过modbus master设备来操作dtu下面连接的rtu slave设备了。
 
 > 后续根据情况可以陆续提供多种应用demo
 
@@ -348,3 +415,4 @@ PikaPython-OpenHardware的开源地址为：[https://gitee.com/Lyon1998/pikapyth
 4.  [ PikaPython-OpenHardware(一款验证pikapython的ESP32-S3开发板): https://gitee.com/Lyon1998/pikapython_openhardware](https://gitee.com/Lyon1998/pikapython_openhardware)
 5.  [rt-thread(一款以开源的物联网操作系统): https://github.com/RT-Thread/rt-thread](https://github.com/RT-Thread/rt-thread)
 6.  [FreeRTOS(一款微控制器的开源实时操作系统): https://github.com/FreeRTOS/FreeRTOS](https://github.com/FreeRTOS/FreeRTOS)
+

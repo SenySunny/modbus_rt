@@ -17,7 +17,7 @@ def pre_call(evt) :
     if cst.READ_HOLDING_REGISTERS == function: 
         data = rm.excuse(slave, function, addr, quantity)
         ts.excuse(cst.WRITE, cst.REGISTERS, addr, quantity, data)
-    elif cst.READ_INPUT_REGISTERS == function: 
+    elif cst.READ_DISCRETE_INPUTS == function: 
         data = rm.excuse(slave, function, addr, quantity)
         ts.excuse(cst.WRITE, cst.INPUTS, addr, quantity, data)
 def done_call(evt) :
