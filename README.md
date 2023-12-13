@@ -1,8 +1,8 @@
 # modbus_rt：纯C实现的跨平台modbus协议通信库
 
-该项目的演示视频，详见：https://www.bilibili.com/video/BV1cc411m72m/
+该项目的演示视频，详见：
 
-​	B站：
+​	B站：https://www.bilibili.com/video/BV1cc411m72m/
 
 ### 一、介绍
 
