@@ -27,7 +27,7 @@
 
 ##### 2、 modbus_rt的几点补充说明：
 
-1. modbus_rt的协议解析部分基于开源的agile_modbus协议栈修改而来。针对slave_util部分做了重写，主要是支持动态绑定slave寄存器，甚至可以运行种增加slave寄存器。
+1. modbus_rt的协议解析部分基于开源的agile_modbus协议栈修改而来。针对slave_util部分做了重写，主要是支持动态绑定slave寄存器，甚至可以运行中增加slave寄存器。
 2. 在基于windows，linux（理论上也可以运行在macos系统）上的串口通信部分采用了开源的libserialport串口通信库，采用加载动态链接库的形式调用，RTOS部分串口通信代码为自己编写。
 3. modbus_rt的网络通信部分，采用BSD Socket接口，所以理论上只要可以支持BSD Socket的平台都可以使用，需要注意的是：为了实现多个socket的阻塞问题，采用了IO多路复用接口（select机制），所以需要系统支持select接口。windows和linux本身就都支持，RTOS系统需要确保系统已经移植了BSD socket并且支持select。
 4. modbus_rt的应用实现层采用多线程，在windows，linux，macos等操作系统上采用了pthread多线程。linux和macos默认支持pthread，windows需要自己加载和安装pthread库。
@@ -49,11 +49,11 @@
 
 ​		我们也可以基于pikapython_test左更多的功能，可以参考后面的案例。
 
-​		如果需要编译到自己的应用程序种，只需要把src目录的代码复制到工程当中去，安装pthread库和libserialport库，自己添加好头文件即可，可以参考我们提供的两个QT+MSVC的源码工程。
+​		如果需要编译到自己的应用程序中，只需要把src目录的代码复制到工程当中去，安装pthread库和libserialport库，自己添加好头文件即可，可以参考我们提供的两个QT+MSVC的源码工程。
 
 ##### 2、Linux平台
 
-​		Linux平台硬件理论上只要时标准的linux系统都可以使用。这里我采用了野火的鲁班猫1作为测试平台，手头刚好又这个开发板，而且目前市面上很多ROS机器人系统都采用了这块开发板，具有一定的代表性，modbus_rt时上层的应用开发API，所以实际上与硬件无关。
+​		Linux平台硬件理论上只要时标准的linux系统都可以使用。这里我采用了野火的鲁班猫1作为测试平台，基于瑞芯微（Rockchip）的RK3566平台。主要是手头刚好又这个开发板，而且而且目前市面上很多ROS机器人系统都采用了这块开发板，具有一定的代表性，modbus_rt时上层的应用开发API，所以实际上与硬件无关。
 
 ![lubancat1](img/lubancat1-front.png)
 
@@ -137,7 +137,7 @@ sudo ./pikapython test.py
 
 7. 可以运行和测试modbus_rt相关功能
 
-​		测试方法和windows一样，需要注意的是，linux终端和windows略有不同，windows的终端可以直接输入程序名称运行程序，而linux终端输入程序名称会检测环境变量下的有没有该名称的程序，并不会直接运行目录下的程序，所以需要输入```.\pikapython``` 或者运行```.\pikapython xxx.py```运行程序，另外，如果程序种socket用到了1024以下的端口号，比如modbus默认的502，需要用管理员模式运行，需要输入```sudo .\pikapython```或者```sudo .\pikapython xxx.py```运行程序。因为linux系统默认用户不能使用1024以下的端口号。
+​		测试方法和windows一样，需要注意的是，linux终端和windows略有不同，windows的终端可以直接输入程序名称运行程序，而linux终端输入程序名称会检测环境变量下的有没有该名称的程序，并不会直接运行目录下的程序，所以需要输入```.\pikapython``` 或者运行```.\pikapython xxx.py```运行程序，另外，如果程序中socket用到了1024以下的端口号，比如modbus默认的502，需要用管理员模式运行，需要输入```sudo .\pikapython```或者```sudo .\pikapython xxx.py```运行程序。因为linux系统默认用户不能使用1024以下的端口号。
 
 > 还有一点需要注意：如果用windows系统或者linux系统作为设备端使用。开启基于udp的slave模式。希望开启设备IP查找功能，windows系统创建slave设备的时候，需要指定网卡的ip地址，类似windows测试时的“192.168.28.150”。linux系统或者RTOS系统下BSD socket则需要用NULL或者空子字符串“”来指定采用默认IP地址。否则接收不到来自255.255.255.255的广播数据包。
 
@@ -341,7 +341,7 @@ sudo ./pikapython tcp2rtu_dtu.py
 
 4. 如果暂时不需要使用设备，可以使用modbus_xxx_close函数关闭设备，该函数主要用于结束设备通信相关线程，关闭设备的通信接口
 
-5. 如果彻底不适用对应设备了，可以使用modbus_xxx_destroy销魂该设备，该函数主要用于销毁设备的互斥量和信号量相关数，销毁设备的数据信息和设备信。此时设备指针将指向空指针。
+5. 如果彻底不适用对应设备了，可以使用modbus_xxx_destroy销毁该设备，该函数主要用于销毁设备的互斥量和信号量相关数，销毁设备的数据信息和设备信。此时设备指针将指向空指针。
 
 6. slave添加寄存器数据块函数为modbus_xxx_add_block函数。参数分别为寄存器类型(默认0, 1, 3, 4四种)，寄存器其实地址，存储数据的空间地址，寄存器的长度（不是数据长度）。
 
