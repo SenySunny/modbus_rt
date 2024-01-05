@@ -219,6 +219,54 @@ sudo ./pikapython test.py
 
 1. 第一个demo和基于APM32E103VET6的demo一样，增加了网络设备查找的功能，可以通过”查找和修改设备IP上位机“进行设备发现和修改设备的网络信息。
 2. 第二个demo由于是在嵌入式平台运行python代码。考虑的文件的传输，这里利用开发板上的SPI Flash 建立了一个FAT文件系统，把其绑定在USB_DEVICE_MSTORAGE设备上，这样就可以把开发板作为一个U盘来使用了。需要拷贝python文件的时候，直接接入USB设备，文件系统就会挂在到USB_DEVICE_MSTORAGE设备上，这时候可以拷贝和编辑里面的PikaPython的python代码。编辑保存完毕之后断开USB，此时文件系统会直接挂在在FATFS文件系统下面，此时便可以通过MSH的命令行执行相应的python代码。（当然，还有很多其他方式可以实现，比如通过TFTP等协议传输文件，这里只是提供了一个demo示例）
+3. 另外，在code_py中增加了一个用STM32实现modbus TCP转RTU的DTU的案例，由于我们在STM32上已经做了寄存器绑定，所以这个demo和在PC上略微有一点不同，代码如下：
+
+```python
+import modbus_rt
+import modbus_rt_defines as cst
+
+serial_name = "uart4"
+ip_addr = ""
+
+rm = modbus_rt.rtu(cst.MASTER)
+rm.set_serial(serial_name)
+rm.open()
+ts = modbus_rt.tcp()
+ts.set_net(ip_addr, 502, cst.SOCK_STREAM)
+def pre_call(evt) :
+    slave = evt.slave
+    function = evt.function
+    addr = evt.addr
+    quantity = evt.quantity
+    if cst.READ_DISCRETE_INPUTS == function: 
+        if addr >= 0 and addr <= 16 :
+            data = rm.excuse(slave, function, addr + 10000, quantity)
+            ts.excuse(cst.WRITE, cst.INPUTS, addr, quantity, data)
+    elif cst.READ_COILS == function: 
+        if addr >= 0 and addr <= 16 :
+            data = rm.excuse(slave, function, addr + 20000, quantity)
+            ts.excuse(cst.WRITE, cst.CIOLS, addr, quantity, data)
+def done_call(evt) :
+    slave = evt.slave
+    function = evt.function
+    addr = evt.addr
+    quantity = evt.quantity
+    if cst.WRITE_SINGLE_COIL == function: 
+        if addr >= 0 and addr <= 16 :
+            data = ts.excuse(cst.READ, cst.CIOLS, addr, 1)  
+            rm.excuse(slave, function, addr + 20000, data[0])  
+    elif cst.WRITE_MULTIPLE_COILS == function: 
+        if addr >= 0 and addr <= 16 :
+            data = ts.excuse(cst.READ, cst.CIOLS, addr, quantity)  
+            rm.excuse(slave, function, addr + 20000, quantity, data)  
+ts.set_strict(0)
+ts.set_pre_ans_callback(pre_call)
+ts.set_done_callback(done_call)
+ts.open()
+
+```
+
+​        该代码执行的效果是，如果写20000线圈寄存器，则默认是写DO输出操作，如果写的是地址0的线圈寄存器，则会默认为通过RTU写扩展IO模块的20000线圈寄存器；同样的，如果是读10000离散输入寄存器，则默认读取的是开发板的DI输入，但是如果读取的是0的离散输入寄存器，则会默认通过RTU读取扩展模块的10000寄存器。这样就方便的对IO外设进行扩展，或者以支持以太网的设备作为主控，以RTU外设作为从机。实现主机对从机的调度。另外通过主机设备像上位机或者云端上传信息的功能。
 
 ##### 4、FreeRTOS平台
 
