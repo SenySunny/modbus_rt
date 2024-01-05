@@ -143,6 +143,10 @@ sudo ./pikapython test.py
 
 ##### 3、RT-Thread平台
 
+​		RT-thread平台演示提供了两套硬件，其中一套硬件是自己DIY的一块PLC开发板，考虑到使用者并没有这个板子做验证，另外这个板子的网络部分采用了W5500的网络芯片来实现的，增加了STM32+lan8720A+lwip的案例演示，该开发板基于”野火STM32F407_骄阳开发板“来实现，关于该开发板的资料可以参考”野火资料下载中心：https://doc.embedfire.com/products/link/zh/latest/mcu/stm32_motor/ebf_stm32f407_jiaoyang/download/stm32f407_jiaoyang.html “
+
+###### （1） 基于APM32E103VET6 + W5500
+
 ​		RT-thread平台演示采用了我之前自己DIY的一块PLC开发板，外壳完全兼容西门子的S7-200的PLC外壳，主控这里采用国产的珠海半导体的APM32E103VET6芯片（基本兼容STM32F103VET6，引脚Pin2Pin兼容，但是RAM时STM32的2倍，128K，STM32只有64K，另外APM32的主频为120Mhz），网络部分采用W5500网络芯片。运行rt-thread系统。电路图和测试代码可以见```example\rt-thread\apm32e103vet6```
 
 ![rt-thread_PLC](img/rt-thread_PLC.png)
@@ -206,6 +210,15 @@ sudo ./pikapython test.py
 ​		目前查找和修改设备IP上位机目前只提供window平台，linux平台暂时未提供，使用方法将建演示视频。
 
 ![device_find](img/device_find.png)
+
+###### （2） 基于STM32F407 + lan8720A + lwip
+
+###### ![stm32f407_jiaoyang](img/stm32f407_jiaoyang.png) 
+
+​        这里我们基于野火STM32F407_骄阳开发做了两个demo，demo的功能和windows基于Linux平台的功能一样，这里需要注意的是：
+
+1. 第一个demo和基于APM32E103VET6的demo一样，增加了网络设备查找的功能，可以通过”查找和修改设备IP上位机“进行设备发现和修改设备的网络信息。
+2. 第二个demo由于是在嵌入式平台运行python代码。考虑的文件的传输，这里利用开发板上的SPI Flash 建立了一个FAT文件系统，把其绑定在USB_DEVICE_MSTORAGE设备上，这样就可以把开发板作为一个U盘来使用了。需要拷贝python文件的时候，直接接入USB设备，文件系统就会挂在到USB_DEVICE_MSTORAGE设备上，这时候可以拷贝和编辑里面的PikaPython的python代码。编辑保存完毕之后断开USB，此时文件系统会直接挂在在FATFS文件系统下面，此时便可以通过MSH的命令行执行相应的python代码。（当然，还有很多其他方式可以实现，比如通过TFTP等协议传输文件，这里只是提供了一个demo示例）
 
 ##### 4、FreeRTOS平台
 
