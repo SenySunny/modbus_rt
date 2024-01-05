@@ -51,8 +51,8 @@ typedef struct stm32_uart  rtt_usart;
 
 #if defined(RTU_USING_UART4) && defined(RTU_UART4_USING_RS485)
 #define UART4_RS485_RE_PIN          GET_PIN(H, 9)                //PH9
-#define uart4_rs485_tx_en()         rt_pin_write(UART4_RS485_RE_PIN, PIN_HIGH)
-#define uart4_rs485_rx_en()         rt_pin_write(UART4_RS485_RE_PIN, PIN_LOW)
+#define uart4_rs485_tx_en()         rt_pin_write(UART4_RS485_RE_PIN, PIN_LOW)
+#define uart4_rs485_rx_en()         rt_pin_write(UART4_RS485_RE_PIN, PIN_HIGH)
 #endif
 
 #if defined(RTU_USING_UART5) && defined(RTU_UART5_USING_RS485)

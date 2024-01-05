@@ -126,6 +126,7 @@ int dev_read_bits(uint8_t *data_addr, int len, uint8_t *data) {
         } else {
             nums_temp = len_re;
             //其他数据，直接读取就可以，不需要做任何操作。
+            memcpy(&data[serial_run], data_run, nums_temp);
             serial_run += nums_temp;
             data_run += nums_temp;
             len_re -= nums_temp;
