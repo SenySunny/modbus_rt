@@ -1044,6 +1044,7 @@ int modbus_rtu_open(rtu_modbus_device_t dev) {
     if(MODBUS_MASTER == dev->mode) {
         data_master = (rtu_master_data_t)dev->data;
     }
+    (void)(data_master);
 #endif
     if (OVER_NONE == dev->over_type) {
         struct modbus_rt_serial_info info = dev->serial_info;
