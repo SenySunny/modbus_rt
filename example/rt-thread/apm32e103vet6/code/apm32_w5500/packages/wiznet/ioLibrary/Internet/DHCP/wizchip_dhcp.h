@@ -69,7 +69,7 @@ extern "C" {
 
 #define MAGIC_COOKIE             0x63825363  ///< You should not modify it number.
 
-#define DCHP_HOST_NAME           "apm32_io\0"
+#define DCHP_HOST_NAME           "apm32io_\0"
 
 /* 
  * @brief return value of @ref DHCP_run()

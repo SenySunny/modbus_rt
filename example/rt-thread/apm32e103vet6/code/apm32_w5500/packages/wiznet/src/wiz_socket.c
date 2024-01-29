@@ -363,15 +363,54 @@ int wiz_socket(int domain, int type, int protocol)
             return -1;
         }
     }
-    else
-    {
-        rt_memset(sock, 0x00, sizeof(struct wiz_socket));
-        LOG_E("socket(%d) is not closed(0x%x).", sock->socket, socket_state);
-        return -1;
-    }
+//    else
+//    {
+//        rt_memset(sock, 0x00, sizeof(struct wiz_socket));
+//        LOG_E("socket(%d) is not closed(0x%x).", sock->socket, socket_state);
+ //       return -1;
+ //   }
     sock->state = SOCK_INIT;
 
     return sock->socket;
+}
+
+//uint8_t eth_up_flag = 0;
+static int free_socket(struct wiz_socket *sock);
+int wiz_closesocket_client(int socket)
+{
+    struct wiz_socket *sock = RT_NULL;
+    sock = wiz_get_socket(socket);
+    if (sock == RT_NULL)
+    {
+        return -1;
+    }
+//    if (0 == eth_up_flag)
+//    {
+//        return free_socket(sock);
+//    }
+//
+//    uint8_t socket_state = 0;
+//    socket_state = getSn_SR(socket);
+//    if (socket_state == SOCK_CLOSED)
+//    {
+//        free_socket(sock);
+//        return -1;
+//    }
+//
+//    int8_t res;
+//    if(sock->type == Sn_MR_TCP)
+//        res = wizchip_disconnect(socket);
+//    else
+//        res = wizchip_close(socket);
+//
+//    if ( res != SOCK_OK)
+//    {
+//        LOG_E("WIZnet socket(%d) close failed.", socket);
+//        free_socket(sock);
+//        return -1;
+//    }
+
+    return free_socket(sock);
 }
 
 /* free server information and close all client socket in server clnt_list */
@@ -390,7 +429,7 @@ static int free_svr_info(struct wiz_socket *sock)
         if (clnt_info)
         {
             rt_slist_remove(&svr_info->clnt_list, node);
-            wiz_closesocket(clnt_info->socket);
+            wiz_closesocket_client(clnt_info->socket);
             rt_free(clnt_info);
         }
     }
@@ -502,6 +541,14 @@ int wiz_closesocket(int socket)
 
     /* check WIZnet initialize status */
 //    WIZ_INIT_STATUS_CHECK;
+//    if (wiz_init_ok == RT_FALSE || (getPHYCFGR() & PHYCFGR_LNK_ON) != PHYCFGR_LNK_ON)
+//    {
+//        eth_up_flag = 0;
+//    }
+//    else
+//    {
+//        eth_up_flag = 1;
+//    }
 
     sock = wiz_get_socket(socket);
     if (sock == RT_NULL)
@@ -1412,7 +1459,7 @@ static uint32_t ipstr_atol(const char *nptr)
     uint32_t total = 0;
     char sign = '+';
     /* jump space */
-    while (isspace(*nptr))
+    while (isspace((int)((char)(*nptr))))
     {
         ++nptr;
     }
@@ -1422,7 +1469,7 @@ static uint32_t ipstr_atol(const char *nptr)
         sign = *nptr++;
     }
 
-    while (isdigit(*nptr))
+    while (isdigit((int)((char)(*nptr))))
     {
         total = 10 * total + ((*nptr++) - '0');
     }
@@ -1472,7 +1519,7 @@ struct hostent *wiz_gethostbyname(const char *name)
     }
 
     /* check domain name or IP address */
-    for (idx = 0; idx < rt_strlen(name) && !isalpha(name[idx]); idx++);
+    for (idx = 0; idx < rt_strlen(name) && !isalpha((int)(name[idx])); idx++);
 
     if (idx < rt_strlen(name))
     {
@@ -1612,7 +1659,7 @@ int wiz_getaddrinfo(const char *nodename, const char *servname, const struct add
             size_t idx = 0;
 
             /* check domain name or IP address */
-            for (idx = 0; idx < rt_strlen(nodename) && !isalpha(nodename[idx]); idx++);
+            for (idx = 0; idx < rt_strlen(nodename) && !isalpha((int)(nodename[idx])); idx++);
 
             if (idx < rt_strlen(nodename))
             {

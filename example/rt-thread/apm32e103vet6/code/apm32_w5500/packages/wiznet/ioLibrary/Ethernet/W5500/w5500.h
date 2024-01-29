@@ -917,12 +917,16 @@ extern "C" {
 /**
  * @brief For Berkeley Socket API
  */
+#ifndef SOCK_STREAM
 #define SOCK_STREAM                  Sn_MR_TCP
+#endif
 
 /**
  * @brief For Berkeley Socket API
  */
+#ifndef SOCK_DGRAM
 #define SOCK_DGRAM                   Sn_MR_UDP
+#endif
 
 
 /* Sn_CR values */

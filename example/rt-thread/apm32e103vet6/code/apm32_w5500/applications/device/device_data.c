@@ -131,7 +131,7 @@ int dev_read_bits(uint8_t *data_addr, int len, uint8_t *data) {
             continue;
         }
     }
-    return 1;
+    return 0;
 }
 
 int dev_write_bits(uint8_t *data_addr, int len, uint8_t *data) {
@@ -176,7 +176,7 @@ int dev_write_bits(uint8_t *data_addr, int len, uint8_t *data) {
             continue;
         }
     }
-    return 1;
+    return 0;
 }
 
 

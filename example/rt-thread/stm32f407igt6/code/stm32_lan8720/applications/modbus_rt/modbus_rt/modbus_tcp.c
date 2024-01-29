@@ -101,7 +101,7 @@ static tcp_slave_data_t  modbus_tcp_slave_data_create(void) {
  */
 static void tcp_slave_close_client_sock( int *p_sock ) {
     for(int i = 0; i < SOCKET_CONNECT_NUMS ; i++) {
-      if(-1 == p_sock[i]) {
+      if(-1 != p_sock[i]) {
           modbus_rt_net_close(p_sock[i]);
           p_sock[i] = -1;
 #if TCP_MODBUS_NUMS_ENABLE         

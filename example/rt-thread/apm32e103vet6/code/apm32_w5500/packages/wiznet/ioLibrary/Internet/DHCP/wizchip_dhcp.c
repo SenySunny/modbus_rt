@@ -390,13 +390,14 @@ void send_DHCP_DISCOVER(void)
 	pDHCPMSG->OPT[k++] = 0;          // fill zero length of hostname 
 	for(i = 0 ; HOST_NAME[i] != 0; i++)
    	pDHCPMSG->OPT[k++] = HOST_NAME[i];
-	pDHCPMSG->OPT[k++] = NibbleToHex(DHCP_CHADDR[3] >> 4); 
-	pDHCPMSG->OPT[k++] = NibbleToHex(DHCP_CHADDR[3]);
+//	pDHCPMSG->OPT[k++] = NibbleToHex(DHCP_CHADDR[3] >> 4);
+//	pDHCPMSG->OPT[k++] = NibbleToHex(DHCP_CHADDR[3]);
 	pDHCPMSG->OPT[k++] = NibbleToHex(DHCP_CHADDR[4] >> 4); 
 	pDHCPMSG->OPT[k++] = NibbleToHex(DHCP_CHADDR[4]);
 	pDHCPMSG->OPT[k++] = NibbleToHex(DHCP_CHADDR[5] >> 4); 
 	pDHCPMSG->OPT[k++] = NibbleToHex(DHCP_CHADDR[5]);
-	pDHCPMSG->OPT[k - (i+6+1)] = i+6; // length of hostname
+//  pDHCPMSG->OPT[k - (i+6+1)] = i+6; // length of hostname
+    pDHCPMSG->OPT[k - (i+4+1)] = i+4; // length of hostname
 
 	pDHCPMSG->OPT[k++] = dhcpParamRequest;
 	pDHCPMSG->OPT[k++] = 0x06;	// length of request
@@ -492,13 +493,14 @@ void send_DHCP_REQUEST(void)
 	pDHCPMSG->OPT[k++] = 0; // length of hostname
 	for(i = 0 ; HOST_NAME[i] != 0; i++)
    	pDHCPMSG->OPT[k++] = HOST_NAME[i];
-	pDHCPMSG->OPT[k++] = NibbleToHex(DHCP_CHADDR[3] >> 4); 
-	pDHCPMSG->OPT[k++] = NibbleToHex(DHCP_CHADDR[3]);
+//	pDHCPMSG->OPT[k++] = NibbleToHex(DHCP_CHADDR[3] >> 4);
+//	pDHCPMSG->OPT[k++] = NibbleToHex(DHCP_CHADDR[3]);
 	pDHCPMSG->OPT[k++] = NibbleToHex(DHCP_CHADDR[4] >> 4); 
 	pDHCPMSG->OPT[k++] = NibbleToHex(DHCP_CHADDR[4]);
 	pDHCPMSG->OPT[k++] = NibbleToHex(DHCP_CHADDR[5] >> 4); 
 	pDHCPMSG->OPT[k++] = NibbleToHex(DHCP_CHADDR[5]);
-	pDHCPMSG->OPT[k - (i+6+1)] = i+6; // length of hostname
+//	pDHCPMSG->OPT[k - (i+6+1)] = i+6; // length of hostname
+	pDHCPMSG->OPT[k - (i+4+1)] = i+4; // length of hostname
 	
 	pDHCPMSG->OPT[k++] = dhcpParamRequest;
 	pDHCPMSG->OPT[k++] = 0x08;
@@ -601,7 +603,10 @@ int8_t parseDHCPMSG(void)
       printf("DHCP message : %d.%d.%d.%d(%d) %d received. \r\n",svr_addr[0],svr_addr[1],svr_addr[2], svr_addr[3],svr_port, len);
    #endif   
    }
-   else return 0;
+   else
+   {
+       return 0;
+   }
 	if (svr_port == DHCP_SERVER_PORT) {
       // compare mac address
 		if ( (pDHCPMSG->chaddr[0] != DHCP_CHADDR[0]) || (pDHCPMSG->chaddr[1] != DHCP_CHADDR[1]) ||

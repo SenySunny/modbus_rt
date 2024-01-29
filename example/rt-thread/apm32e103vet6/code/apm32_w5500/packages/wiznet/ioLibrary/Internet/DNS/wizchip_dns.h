@@ -68,7 +68,7 @@ extern "C" {
  * @todo SHOULD BE defined it equal as or greater than your Domain name lenght + null character(1)
  * @note SHOULD BE careful to stack overflow because it is allocated 1.5 times as MAX_DOMAIN_NAME in stack.
  */
-#define  MAX_DOMAIN_NAME   16       // for example "www.google.com"
+#define  MAX_DOMAIN_NAME   64       // for example "www.google.com"
 
 #define	MAX_DNS_RETRY     2        ///< Requery Count
 #define	DNS_WAIT_TIME     3        ///< Wait response time. unit 1s.
