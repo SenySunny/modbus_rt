@@ -21,8 +21,8 @@ static int modbus_rt_serial_add_dev(struct sp_port *serial_port)
         modbus_rt_serial_t *temp = p_serial_info;
         serial = temp->serial;
         while(NULL != temp->next) {
-            serial = temp->serial;
             temp = temp->next;
+            serial = temp->serial;
         }
         temp->next = serial_port_temp;
         serial_port_temp->pre = temp;
