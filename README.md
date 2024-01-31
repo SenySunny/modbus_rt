@@ -33,7 +33,21 @@
 4. modbus_rt的应用实现层采用多线程，在windows，linux，macos等操作系统上采用了pthread多线程。linux和macos默认支持pthread，windows需要自己加载和安装pthread库。
 5. 本项目参考和借鉴使用了包括但不仅限于以下开源的项目：agile_modbus,  libserialport, PikaPython, PikaPython-OpenHardware, RT-Thread, FreeRTOS等等(如还有没有标注的项目，请注明)。采用和借鉴了的开源项目地址详见最后感谢栏，欢迎大家点赞相互交流学习。感谢以上的开源项目作者。
 
-### 二、测试与使用
+### 二、重大的更新记录
+
+##### 1、2024-01-31更新内容
+
+ 1. 把SLAVE_DATA_DEVICE_BINDING宏定义，修改为SLAVE_DATA_DEVICE_BINDING宏定义和dev_binding标志变量共同决定是否需要把SLAVE的硬件外设绑定到寄存器当中。所以在设备需要绑定硬件外设时，需要额外调用 modbus_xxx_set_dev_binding(xxx_modbus_device_t dev, int flag)函数来实现绑定变量，否则默认为不绑定，可以作为完全独立的modbus实例存在。这样做的目的是为了在交互端，PC上基于DTU的代码可以几乎不用移植的在嵌入式设备上运行。
+
+ 2. 基于modbus的添加文件传输功能（类似tftp，采用mosbus自定义功能码实现，功能码可以在mosbus_p2p.h中自行修改），可以用该功能实现固件升级(可选择加载加密代码实现固件的加密传输和升级)。另外可以实现串口，网络直接传输pikapython的字节码到设备端（如果设备端有文件系统支持），设备端直接运行字节码，使得在设备端运行pikapython更加高效和便捷。（该功能可以通过宏定义打开或者关闭，关闭文件传输功能，与之前版本兼容）。
+
+ 3. 整合到pikaPython的官方仓库，可以直接使用pikaPython的包管理工具加载和更新。并且对大小端转化、RTU和TCP做了分割，方便只需要使用Modbus TCP或者只需要使用modbus RTU的用户，也可以快速modbus_rt到项目中（需要RTOS或者操作系统支持，暂时不支持裸机运行modbus_rt）。
+
+ 4. 把modbus中的协议解析部分，与agile modbus同步更新到1.1.4版本的agile modbus
+
+    > **需要特别注意的是：**考虑到第1条可能会导致部分使用之前版本代码的用户（仅限在设备端，绑定了硬件本身的IO外设的情况下）在升级到最新版本之后，可能会有一定的兼容性问题（需要在创建modbus slave实例之后，除开需要把宏定义SLAVE_DATA_DEVICE_BINDING设置为1打开，还需要增加额外增加一条modbus_xxx_set_dev_binding函数，才可以实现完全的与硬件绑定功能）。如果不需要以上功能的用户可以直接使用betaV0.1版本。
+
+### 三、测试与使用
 
 ##### 1、 windows平台
 
@@ -390,7 +404,7 @@ sudo ./pikapython tcp2rtu_dtu.py
 
 > 后续根据情况可以陆续提供多种应用demo
 
-### 三、接口说明
+### 四、接口说明
 
 ##### 1、 移植和使用
 
@@ -456,7 +470,7 @@ sudo ./pikapython tcp2rtu_dtu.py
 
 
 
-### 四、支持
+### 五、支持
 
 ​		欢迎右上角点击start给我一个支持，欢迎fork。
 
@@ -464,12 +478,12 @@ sudo ./pikapython tcp2rtu_dtu.py
 
 ​	如果本软件对你提供了帮忙，可以请我喝杯咖啡~ 非常感谢！
 
-### 五、 联系方式
+### 六、 联系方式
 
 - 维护：SenySunny
 - 邮箱：[senysunny@163.com](mailto:senysunny@163.com)
 
-### 六、 感谢以下项目作者
+### 七、 感谢以下项目作者
 
 ​	本项目参考或者使用了如下开源项目的内容，再此对以下项目的创作者表示感谢。
 
