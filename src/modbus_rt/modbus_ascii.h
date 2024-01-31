@@ -63,6 +63,9 @@ int modbus_ascii_excuse(ascii_modbus_device_t dev, int dir_slave, int type_funct
     int modbus_ascii_add_block(ascii_modbus_device_t dev, modbus_register_type_t type, int data_addr, void *data, int nums);
     int modbus_ascii_set_pre_ans_callback(ascii_modbus_device_t dev, int (*pre_ans)(agile_modbus_t *, int, int,int, int));
     int modbus_ascii_set_done_callback(ascii_modbus_device_t dev, int (*done)(agile_modbus_t *, int, int,int, int));
+#if SLAVE_DATA_DEVICE_BINDING
+    int modbus_ascii_set_dev_binding(ascii_modbus_device_t dev, int flag);
+#endif
 #endif
 
 #if MODBUS_ASCII_MASTER_ENABLE

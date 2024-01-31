@@ -174,6 +174,11 @@ int modbus_ascii_set_pre_ans_callback(ascii_modbus_device_t dev, int (*pre_ans)(
 int modbus_ascii_set_done_callback(ascii_modbus_device_t dev, int (*done)(agile_modbus_t *, int, int,int, int)) {
     return modbus_rtu_set_done_callback(dev, done);
 }
+#if SLAVE_DATA_DEVICE_BINDING
+int modbus_ascii_set_dev_binding(ascii_modbus_device_t dev, int flag) {
+    return modbus_rtu_set_dev_binding(dev, flag);
+}
+#endif
 #endif
 
 #if MODBUS_ASCII_MASTER_ENABLE

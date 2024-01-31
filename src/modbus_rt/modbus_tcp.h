@@ -40,6 +40,9 @@ struct tcp_modbus_device {
     unsigned int port;                          //端口号
     int status;                                 //设备状态，是否已经打开
     modbus_mode_type mode;                      //modbus rtu工作模式：SLAVE/MASTER
+#if MODBUS_P2P_ENABLE
+    int p2p_flag;                               //是否开启p2p功能，即通过modbus传输文件的功能
+#endif
     agile_modbus_tcp_t ctx_tcp;                 //agile_modbus_tcp_t结构体
     agile_modbus_t *ctx;                        //agile_modbus的句柄
     int send_len;                               //打包需要发送数据的长度
@@ -117,6 +120,9 @@ int modbus_tcp_isopen(tcp_modbus_device_t dev);
 int modbus_tcp_close(tcp_modbus_device_t dev);
 int modbus_tcp_destroy(tcp_modbus_device_t * pos_dev);
 int modbus_tcp_excuse(tcp_modbus_device_t dev, int dir_slave, int type_function, int addr, int quantity, void *ptr_data);
+#if  MODBUS_P2P_ENABLE
+    int modbus_tcp_set_p2p_flag(tcp_modbus_device_t dev, int flag);
+#endif
 
 #if MODBUS_TCP_SLAVE_ENABLE
     int modbus_tcp_set_addr(tcp_modbus_device_t dev, int addr);
@@ -124,6 +130,9 @@ int modbus_tcp_excuse(tcp_modbus_device_t dev, int dir_slave, int type_function,
     int modbus_tcp_add_block(tcp_modbus_device_t dev, modbus_register_type_t type, int data_addr, void *data, int nums);
     int modbus_tcp_set_pre_ans_callback(tcp_modbus_device_t dev, int (*pre_ans)(agile_modbus_t *, int, int,int, int));
     int modbus_tcp_set_done_callback(tcp_modbus_device_t dev, int (*done)(agile_modbus_t *, int, int,int, int));
+#if SLAVE_DATA_DEVICE_BINDING
+    int modbus_tcp_set_dev_binding(tcp_modbus_device_t dev, int flag);
+#endif
 #endif
 
 #if MODBUS_TCP_MASTER_ENABLE
@@ -131,6 +140,9 @@ int modbus_tcp_excuse(tcp_modbus_device_t dev, int dir_slave, int type_function,
     int modbus_tcp_get_saddr(tcp_modbus_device_t dev, char* saddr);
     int modbus_tcp_excuse_ex(tcp_modbus_device_t dev, int slave, int function,int w_addr, int w_quantity, 
                             void *ptr_w_data, int r_addr, int r_quantity, void *ptr_r_data);
+    #if  ((MODBUS_P2P_ENABLE) && (MODBUS_P2P_MASTER_ENABLE))
+        int modbus_tcp_excuse_file(tcp_modbus_device_t dev, int slave, modbus_excuse_dir_t dir, char *file_dev, char *file_master);
+    #endif
 #endif
 
 #endif

@@ -71,6 +71,9 @@ struct rtu_modbus_device {
 #endif
     int status;                                 //设备状态，是否已经打开
     modbus_mode_type mode;                      //modbus rtu工作模式：SLAVE/MASTER
+#if MODBUS_P2P_ENABLE
+    int p2p_flag;                               //是否开启p2p功能，即通过modbus传输文件的功能
+#endif
     agile_modbus_rtu_t ctx_rtu;                 //agile_modbus_tcp_t结构体
     agile_modbus_t *ctx;                        //agile_modbus的句柄
     int send_len;                               //打包需要发送数据的长度
@@ -145,6 +148,9 @@ int modbus_rtu_isopen(rtu_modbus_device_t dev);
 int modbus_rtu_close(rtu_modbus_device_t dev);
 int modbus_rtu_destroy(rtu_modbus_device_t * pos_dev);
 int modbus_rtu_excuse(rtu_modbus_device_t dev, int dir_slave, int type_function, int addr, int quantity, void *ptr_data);
+#if  MODBUS_P2P_ENABLE
+    int modbus_rtu_set_p2p_flag(rtu_modbus_device_t dev, int flag);
+#endif
 
 #if MODBUS_SERIAL_OVER_TCP_ENABLE || MODBUS_SERIAL_OVER_UDP_ENABLE
     int modbus_rtu_set_over_type(rtu_modbus_device_t dev, modbus_serial_over_type_t over_type);
@@ -160,6 +166,9 @@ int modbus_rtu_excuse(rtu_modbus_device_t dev, int dir_slave, int type_function,
     int modbus_rtu_add_block(rtu_modbus_device_t dev, modbus_register_type_t type, int data_addr, void *data, int nums);
     int modbus_rtu_set_pre_ans_callback(rtu_modbus_device_t dev, int (*pre_ans)(agile_modbus_t *, int, int,int, int));
     int modbus_rtu_set_done_callback(rtu_modbus_device_t dev, int (*done)(agile_modbus_t *, int, int,int, int));
+#if SLAVE_DATA_DEVICE_BINDING
+    int modbus_rtu_set_dev_binding(rtu_modbus_device_t dev, int flag);
+#endif
 #endif
 
 #if MODBUS_TCP_MASTER_ENABLE
@@ -169,6 +178,9 @@ int modbus_rtu_excuse(rtu_modbus_device_t dev, int dir_slave, int type_function,
     #endif
     int modbus_rtu_excuse_ex(rtu_modbus_device_t dev, int slave, int function,int w_addr, int w_quantity, 
                             void *ptr_w_data, int r_addr, int r_quantity, void *ptr_r_data);
+    #if  ((MODBUS_P2P_ENABLE) && (MODBUS_P2P_MASTER_ENABLE))
+        int modbus_rtu_excuse_file(rtu_modbus_device_t dev, int slave, modbus_excuse_dir_t dir, char *file_dev, char *file_master);
+    #endif
 #endif
 
 #endif

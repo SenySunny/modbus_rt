@@ -1,12 +1,13 @@
 
 #include "modbus_rt_platform_memory.h"
 
+extern struct rt_memheap ccm_heap;
+
 void *modbus_rt_malloc(size_t size) {
     return rt_malloc(size);
 }
 
 void *modbus_rt_calloc(size_t num, size_t size) {
-    (void)(num);
     return rt_calloc(num, size);
 }
 

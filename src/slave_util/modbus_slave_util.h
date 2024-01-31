@@ -50,8 +50,8 @@ typedef struct agile_modbus_slave_util_map {
     void *data;                                          /**<数据的地址>*/
     int len;                                            /**<寄存器长度> */
 
-    int (*get)(void *data_addr, int len, void *data);   /**<获取寄存器数据接口 */
-    int (*set)(void *data_addr, int len, void *data);   /**<设置寄存器数据接口 */
+    int (*get)(uint8_t dev_binding, void *data_addr, int len, void *data);   /**<获取寄存器数据接口 */
+    int (*set)(uint8_t dev_binding, void *data_addr, int len, void *data);   /**<设置寄存器数据接口 */
 
     struct agile_modbus_slave_util_map *pre;            /**<指向前一个数据的指针 > */
     struct agile_modbus_slave_util_map *next;           /**<指向后一个数据的指针 > */
@@ -61,6 +61,7 @@ typedef struct agile_modbus_slave_util_map {
  * @brief   从机功能结构体
  */
 typedef struct agile_modbus_slave_util {
+    uint8_t dev_binding;                                                            /**<是否绑定设备硬件定义 */
     agile_modbus_slave_util_map_t *tab_bits, *tab_bits_tail;                        /**<线圈寄存器定义 */
     agile_modbus_slave_util_map_t *tab_input_bits, *tab_input_bits_tail;            /**<离散量输入寄存器定义 */
     agile_modbus_slave_util_map_t *tab_registers, *tab_registers_tail;              /**<保持寄存器定义 */

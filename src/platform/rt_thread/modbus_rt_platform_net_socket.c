@@ -35,7 +35,7 @@ int modbus_rt_tcp_server_init(char* ipaddr, unsigned int port,int backlog)
     int optval = 1;
     modbus_rt_net_setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
 
-    if((NULL != ipaddr) &&(0 == strlen(ipaddr))) {
+    if((NULL != ipaddr) && (0 == strlen(ipaddr))) {
         ipaddr = NULL;
     }
     server_addr.sin_family = AF_INET;
@@ -73,7 +73,7 @@ int modbus_rt_tcp_client_init(char* ipaddr, unsigned int port, char* saddr, unsi
     modbus_rt_net_setsockopt(cfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
 
     if((NULL != ipaddr) || (0 != port)) {
-        if((NULL != ipaddr) &&(0 == strlen(ipaddr))) {
+        if((NULL != ipaddr) && (0 == strlen(ipaddr))) {
             ipaddr = NULL;
         }
         client_addr.sin_family = AF_INET;

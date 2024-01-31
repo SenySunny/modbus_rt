@@ -123,11 +123,16 @@ static int modbus_slave_insert_val(agile_modbus_slave_util_map_t *map_t, agile_m
  * @return  int:                                MODBUS_RT_EOK：成功，其他：失败
  *       
  */
-static int modbus_slave_write_bits(void *data_addr, int len, void *data) {
+static int modbus_slave_write_bits(uint8_t dev_binding, void *data_addr, int len, void *data) {
     uint8_t *data_addr_temp = (uint8_t *)data_addr;
     uint8_t *data_temp = (uint8_t *)data;
-#if SLAVE_DATA_DEVICE_BINDING    
-    return dev_write_bits(data_addr_temp, len, data_temp);
+#if SLAVE_DATA_DEVICE_BINDING
+    if(0 != dev_binding) {
+        return dev_write_bits(data_addr_temp, len, data_temp);
+    } else {
+        memcpy(data_addr_temp, data_temp, len);
+        return MODBUS_RT_EOK;
+    }
 #else
     memcpy(data_addr_temp, data_temp, len);
     return MODBUS_RT_EOK;
@@ -143,11 +148,16 @@ static int modbus_slave_write_bits(void *data_addr, int len, void *data) {
  * @return  int:                                MODBUS_RT_EOK：成功，其他：失败
  *       
  */
-static int modbus_slave_read_bits(void *data_addr, int len, void *data) {
+static int modbus_slave_read_bits(uint8_t dev_binding, void *data_addr, int len, void *data) {
     uint8_t *data_addr_temp = (uint8_t *)data_addr;
     uint8_t *data_temp = (uint8_t *)data;
 #if SLAVE_DATA_DEVICE_BINDING 
-    return dev_read_bits(data_addr_temp, len, data_temp);
+    if(0 != dev_binding) {
+        return dev_read_bits(data_addr_temp, len, data_temp);
+    } else {
+        memcpy(data_temp, data_addr_temp, len);
+        return MODBUS_RT_EOK;
+    }
 #else
     memcpy(data_temp, data_addr_temp, len);
     return MODBUS_RT_EOK;
@@ -164,11 +174,16 @@ static int modbus_slave_read_bits(void *data_addr, int len, void *data) {
  * @return  int:                                MODBUS_RT_EOK：成功，其他：失败
  *       
  */
-static int modbus_slave_write_regs(void *data_addr, int len, void *data) {
+static int modbus_slave_write_regs(uint8_t dev_binding, void *data_addr, int len, void *data) {
     uint16_t *data_addr_temp = (uint16_t *)data_addr;
     uint16_t *data_temp = (uint16_t *)data;
 #if SLAVE_DATA_DEVICE_BINDING 
-    return dev_write_regs(data_addr_temp, len, data_temp);
+    if(0 != dev_binding) {
+        return dev_write_regs(data_addr_temp, len, data_temp);
+    } else {
+        memcpy(data_addr_temp, data_temp, len * 2);
+        return MODBUS_RT_EOK;
+    }
 #else
     memcpy(data_addr_temp, data_temp, len * 2);
     return MODBUS_RT_EOK;
@@ -184,11 +199,16 @@ static int modbus_slave_write_regs(void *data_addr, int len, void *data) {
  * @return  int:                                MODBUS_RT_EOK：成功，其他：失败
  *       
  */
-static int modbus_slave_read_regs(void *data_addr, int len, void *data) {
+static int modbus_slave_read_regs(uint8_t dev_binding, void *data_addr, int len, void *data) {
     uint16_t *data_addr_temp = (uint16_t *)data_addr;
     uint16_t *data_temp = (uint16_t *)data;
 #if SLAVE_DATA_DEVICE_BINDING 
-    return dev_read_regs(data_addr_temp, len, data_temp);
+    if(0 != dev_binding) {
+        return dev_read_regs(data_addr_temp, len, data_temp);
+    } else {
+        memcpy(data_temp, data_addr_temp, len * 2);
+        return MODBUS_RT_EOK;
+    }
 #else
     memcpy(data_temp, data_addr_temp, len * 2);
     return MODBUS_RT_EOK;
@@ -204,6 +224,7 @@ static int modbus_slave_read_regs(void *data_addr, int len, void *data) {
  */
 void modbus_slave_util_init(agile_modbus_slave_util_t *util) {
     if(util != NULL) {
+        util->dev_binding = 0;
         util->tab_bits = NULL;
         util->tab_bits_tail = NULL;
         util->tab_input_bits = NULL;
@@ -218,10 +239,22 @@ void modbus_slave_util_init(agile_modbus_slave_util_t *util) {
         util->pre_ans_callback = NULL;
         util->done_callback = NULL;
     }
-#if SLAVE_DATA_DEVICE_BINDING 
-    dev_data2modbus_slave(util);
-#endif
 }
+
+#if SLAVE_DATA_DEVICE_BINDING 
+int modbus_slave_util_dev_binding(agile_modbus_slave_util_t *util, int flag) {
+    if((0 != flag) && (1 != flag)) {
+        return -MODBUS_RT_ERROR;
+    }
+    if((0 != flag) && (0 == util->dev_binding)) {
+        util->dev_binding = 1;
+        dev_data2modbus_slave(util);
+    } else if(0 == flag){
+        return -MODBUS_RT_ERROR;
+    }
+    return  MODBUS_RT_EOK;
+}
+#endif
 
 /**
  * @brief   modbus_slave_add_val:           增加绑定数据寄存器
@@ -422,10 +455,10 @@ int modbus_slave_read(agile_modbus_slave_util_t *util, modbus_register_type_t ty
             }
             if (type == CIOLS || type == INPUTS) {
                 uint8_t *p = (uint8_t *)ptr_data;
-                map->get(((uint8_t *)map->data) + index, need_len, &(p[now_address - address]));
+                map->get(util->dev_binding, ((uint8_t *)map->data) + index, need_len, &(p[now_address - address]));
             } else {
                 uint16_t *p = (uint16_t *)ptr_data;
-                map->get(((uint16_t *)map->data) + index, need_len, &(p[now_address - address]));
+                map->get(util->dev_binding, ((uint16_t *)map->data) + index, need_len, &(p[now_address - address]));
             }
         }
         now_address += map_len - 1;
@@ -481,10 +514,10 @@ int modbus_slave_write(agile_modbus_slave_util_t *util, modbus_register_type_t t
             }
             if (type == CIOLS || type == INPUTS) {
                 uint8_t *p = (uint8_t *)ptr_data;
-                map->set(((uint8_t *)map->data) + index, need_len, &(p[now_address - address]));
+                map->set(util->dev_binding, ((uint8_t *)map->data) + index, need_len, &(p[now_address - address]));
             } else {
                 uint16_t *p = (uint16_t *)ptr_data;
-                map->set(((uint16_t *)map->data) + index, need_len, &(p[now_address - address]));
+                map->set(util->dev_binding, ((uint16_t *)map->data) + index, need_len, &(p[now_address - address]));
             }
         }
         now_address += map_len - 1;

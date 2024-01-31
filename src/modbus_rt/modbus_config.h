@@ -151,7 +151,7 @@ extern "C" {
  @endverbatim
  */
 #ifndef MODBUS_DATA_TRANS_ENABLE
-    #define MODBUS_DATA_TRANS_ENABLE                 1
+    #define MODBUS_DATA_TRANS_ENABLE                 0
 #endif
 
 
@@ -168,10 +168,42 @@ extern "C" {
 
 #if MODBUS_TCP_SLAVE_ENABLE
     #ifndef TCP_MODBUS_NUMS
-        #define TCP_MODBUS_NUMS                     6
+        #define TCP_MODBUS_NUMS                     7
     #endif
     extern int tcp_modbus_nums;
 #endif
+
+
+/**
+ @verbatim
+    modbus_rt在实现基本的modbus协议的基础上，扩展了文件传输协议，可以实现用modbus来发送和接收文件
+    文件支持采用自定义指令，且需要文件系统支持
+    (也可以自己重构modbus_rt_platform_file相关函数来模拟文件系统，实现非文件系统文件传输)
+    文件系统包括发送文件MODBUS_P2P_SEND_ENABLE(master向slave发送文件)，
+    接收文件MODBUS_P2P_RECV_ENABLE（master读取slave中的文件）
+    这两个宏定义将开启SLAVE设备的接收文件，和被读取文件功能
+    MASTER设备需要同时开启MODBUS_P2P_MASTER_ENABLE和相应的发送和接收使能,也就是至少使能两项
+ @endverbatim
+ */
+#ifndef MODBUS_P2P_ENABLE
+    #define  MODBUS_P2P_ENABLE                      1
+#endif
+
+#if MODBUS_P2P_ENABLE
+    #ifndef MODBUS_P2P_FILE_LEN
+        #define MODBUS_P2P_FILE_LEN                 244
+    #endif
+    #ifndef MODBUS_P2P_SEND_ENABLE
+        #define MODBUS_P2P_SEND_ENABLE             1
+    #endif
+    #ifndef MODBUS_P2P_RECV_ENABLE
+        #define MODBUS_P2P_RECV_ENABLE             1
+    #endif
+    #ifndef MODBUS_P2P_MASTER_ENABLE
+        #define MODBUS_P2P_MASTER_ENABLE            1
+    #endif
+#endif
+
 
 /**
  @verbatim
@@ -247,6 +279,14 @@ extern "C" {
 #define MODBUS_RT_ISOPEN                       11               /**< 设备已经开启 */
 #define MODBUS_RT_REMOTE                       12               /**< 远程主机错误，client无法连接 */
 #define MODBUS_RT_HOST_ERROR                   13               /**< 主机域名解析错误 */
+
+#if (!MODBUS_RTU_SLAVE_ENABLE) && (!MODBUS_RTU_MASTER_ENABLE)
+    #define AGILE_MODBUS_USING_RTU           0
+#endif
+
+#if (!MODBUS_TCP_SLAVE_ENABLE) && (!MODBUS_TCP_MASTER_ENABLE)
+    #define AGILE_MODBUS_USING_TCP           0
+#endif
 
 
 /**

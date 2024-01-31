@@ -1,7 +1,7 @@
-﻿/**
+/**
  * @file    agile_modbus_tcp.h
- * @brief   Agile Modbus 软件包 TCP 头文件
- * @author  马龙伟 (2544047213@qq.com)
+ * @brief   Agile Modbus package TCP header file
+ * @author  Ma Longwei (2544047213@qq.com)
  * @date    2021-12-02
  *
  * @attention
@@ -13,6 +13,8 @@
 
 #ifndef __PKG_AGILE_MODBUS_TCP_H
 #define __PKG_AGILE_MODBUS_TCP_H
+
+#if AGILE_MODBUS_USING_TCP
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,10 +52,10 @@ extern "C" {
  */
 
 /**
- * @brief   TCP 结构体
+ * @brief   TCP structure
  */
 typedef struct agile_modbus_tcp {
-    agile_modbus_t _ctx; /**< modbus 句柄 */
+    agile_modbus_t _ctx; /**< modbus handle */
     uint16_t t_id;       /**< Extract from MODBUS Messaging on TCP/IP Implementation Guide V1.0b
                          (page 23/46):
                          The transaction identifier is used to associate the future response
@@ -80,4 +82,6 @@ int agile_modbus_tcp_init(agile_modbus_tcp_t *ctx, uint8_t *send_buf, int send_b
 }
 #endif
 
-#endif
+#endif /* AGILE_MODBUS_USING_TCP */
+
+#endif /* __PKG_AGILE_MODBUS_TCP_H */
