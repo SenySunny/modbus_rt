@@ -17,7 +17,7 @@
    import modbus_rt_defines as cst
    ```
 
-5. 重新编译即可（如果编译器没有设置编译前预编译皮卡python，则需要手动运行皮卡python目录下的rust-msc-latest-win10.exe文件进行预编译）。
+5. 重新编译即可（如果编译器没有设置编译前预编译pikapython，则需要手动运行pikapython目录下的rust-msc-latest-win10.exe文件进行预编译）。
 
    ​       这样modbus_rt就被添加到pikapython中。
 
