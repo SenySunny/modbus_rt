@@ -39,7 +39,7 @@
 
  1. 把SLAVE_DATA_DEVICE_BINDING宏定义，修改为SLAVE_DATA_DEVICE_BINDING宏定义和dev_binding标志变量共同决定是否需要把SLAVE的硬件外设绑定到寄存器当中。所以在设备需要绑定硬件外设时，需要额外调用 modbus_xxx_set_dev_binding(xxx_modbus_device_t dev, int flag)函数来实现绑定变量，否则默认为不绑定，可以作为完全独立的modbus实例存在。这样做的目的是为了在交互端，PC上基于DTU的代码可以几乎不用移植的在嵌入式设备上运行。
 
- 2. 基于modbus的添加文件传输功能（类似tftp，采用mosbus自定义功能码实现，功能码可以在mosbus_p2p.h中自行修改），可以用该功能实现固件升级(可选择加载加密代码实现固件的加密传输和升级)。另外可以实现串口，网络直接传输pikapython的字节码到设备端（如果设备端有文件系统支持），设备端直接运行字节码，使得在设备端运行pikapython更加高效和便捷。（该功能可以通过宏定义打开或者关闭，关闭文件传输功能，与之前版本兼容）。
+ 2. 增加基于modbus的添加文件传输功能（类似tftp，采用mosbus自定义功能码实现，功能码可以在mosbus_p2p.h中自行修改），可以用该功能实现固件升级(可选择加载加密代码实现固件的加密传输和升级)。另外可以实现串口，网络直接传输pikapython的字节码到设备端（如果设备端有文件系统支持），设备端直接运行字节码，使得在设备端运行pikapython更加高效和便捷。（该功能可以通过宏定义打开或者关闭，关闭文件传输功能，与之前版本兼容）。
 
  3. 整合到pikaPython的官方仓库，可以直接使用pikaPython的包管理工具加载和更新。并且对大小端转化、RTU和TCP做了分割，方便只需要使用Modbus TCP或者只需要使用modbus RTU的用户，也可以快速modbus_rt到项目中（需要RTOS或者操作系统支持，暂时不支持裸机运行modbus_rt）。
 
