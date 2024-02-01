@@ -10,7 +10,7 @@
 
 ​		modbus_rt支持几乎市面上常用的所有的modbus协议的实现，包括**modbus RTU**，**modbus ASCII**，**modbus TCP**，**modbus TCP over UDP**，**modbus RTU over TCP/UDP**, **modbus ASCII over TCP/UDP**，且都可以运行在**Slave模式**和**Master模式**。另外modbus_rt提供了modbus通信中的大小端转换函数接口(市面上**4种大小端模式**均支持)，实现不同平台下的modbus寄存到各种数据的转换接口函数功能（包括bytes, string, int, long, float, double等）。
 
-​		modbus_rt还额外提供了基于pikapython的接口实现，可以采用python脚本实现modbus通信功能。可以无缝兼容到pikapython的环境当中（后续可能考虑提供基于micro python和Cpython的接口实现，本人对micro python和Cpython的底层封装不是很熟悉，看情况，不一定有时间，感兴趣的可以自己移植）。
+​		modbus_rt还额外提供了基于pikapython的接口实现，并整合进pikapython的官方的包管理器。可以采用python脚本实现modbus通信功能。可以无缝兼容到pikapython的环境当中（后续可能考虑提供基于micro python和Cpython的接口实现，本人对micro python和Cpython的底层封装不是很熟悉，看情况，不一定有时间，感兴趣的可以自己移植）。
 
 ​		另外由于modbus_rt采用纯C编写，后续会考虑支持编译封装为动态链接库，供其他编程语言调用（主要考虑给C#调用，目前主要的控制上位机平台基于QT或者C#居多），目前暂时没有封装dll，所以仅提供基于QT的demo。
 
@@ -24,6 +24,7 @@
 6. **基于UDP通信接口之上modbus模式下，提供了网络设备查找和发现功能**。即：modbus slave端（一般可以称为设备端，以下简称设备端）与modbus master端（一般PC客户端或者应用端，以下简称客户端）为同一个路由器或者交换机下面的不同设备时。即使设备端与客户端的IP地址不在同一个网段下（设备端IP地址未知），可以由客户端通过往255.255.255.255的广播地址广播modbus命令，设备端收到广播信息后会对广播设备的ip地址进行检测，如果与设备不在同一个网段，会默认往255.255.255.255广播应答信息。这个时候，客户端就可以获取到modbus_rt设备端的ip地址。这样就可以实现设备地址的发现。另外基于此基础上可以扩展实现修改设备的IP地址的功能（详细可以参考rt-thread平台演示）。
 7. **mdobus_rt在slave模式下，增加了set_pre_ans_callback和set_done_callback两个回调函数调用接口**。方便快速实现modbus协议与其他协议的转换。比如modbus RTU，ASCII，TCP之间的相互转化， modbus转mqtt，modbus转sql， modbus转OPC Client， modbus转profibus，modbus转canOpen等协议（第三方协议需要自己实现）。可以快速实现类似DTU的应用，以适应各种工业物联网的应用需求（详细可以参考modbus dtu案例演示）。
 8. **modbus_rt提供脚本的应用层接口API，目前实现基于pikapython**（主要是考虑到pikapython本身采用python3语法，且支持windows，linux，RTOS，甚至无系统的跨平台支持），并且支持脚本解析运行模式和字节码运行模式，且提供了REPL的交互式运行模块。所以可以无缝集成到系统当中，也可以采用类似终端的方式，基于REPL的命令行模式来验证功能。
+9. **（2024-01-31增加）支持自动modbus功能码实现文件下载和上传功能**：可以方便的用modbus_rt实现固件升级和其他文件（比如pikapython的字节码）下载上传功能。并且可以选择使用mbedTLS对固件和文件进行加密，实现加密的文件下载和上传。
 
 ##### 2、 modbus_rt的几点补充说明：
 
