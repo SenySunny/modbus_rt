@@ -228,7 +228,7 @@ sudo ./pikapython test.py
 
 ![device_find](img/device_find.png)
 
-软件的简介和使用说明，详见[工具软件使用说明](example\windows\tools\ReadMe.md)
+软件的简介和使用说明，详见[工具软件使用说明](example/windows/tools/ReadMe.md)
 
 ###### （2） 基于STM32F407 + lan8720A + lwip
 
