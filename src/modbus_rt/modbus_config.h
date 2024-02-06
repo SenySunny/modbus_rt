@@ -59,11 +59,11 @@ extern "C" {
 #endif
 
 #ifndef MODBUS_TCP_SLAVE_ENABLE
-    #define MODBUS_TCP_SLAVE_ENABLE                 1
+    #define MODBUS_TCP_SLAVE_ENABLE                 0
 #endif
 
 #ifndef MODBUS_TCP_MASTER_ENABLE
-    #define MODBUS_TCP_MASTER_ENABLE                1
+    #define MODBUS_TCP_MASTER_ENABLE                0
 #endif
 
 
@@ -90,11 +90,11 @@ extern "C" {
  @endverbatim
  */
 #ifndef MODBUS_TCP_SLAVE_FOR_UDP_ENABLE
-    #define MODBUS_TCP_SLAVE_FOR_UDP_ENABLE     1
+    #define MODBUS_TCP_SLAVE_FOR_UDP_ENABLE     0
 #endif
 
 #ifndef MODBUS_TCP_MASTER_FOR_UDP_ENABLE
-    #define MODBUS_TCP_MASTER_FOR_UDP_ENABLE    1
+    #define MODBUS_TCP_MASTER_FOR_UDP_ENABLE    0
 #endif
 
 
@@ -105,11 +105,11 @@ extern "C" {
  @endverbatim
  */
 #ifndef MODBUS_SERIAL_OVER_TCP_ENABLE
-    #define MODBUS_SERIAL_OVER_TCP_ENABLE           1
+    #define MODBUS_SERIAL_OVER_TCP_ENABLE           0
 #endif
 
 #ifndef MODBUS_SERIAL_OVER_UDP_ENABLE
-    #define MODBUS_SERIAL_OVER_UDP_ENABLE           1
+    #define MODBUS_SERIAL_OVER_UDP_ENABLE           0
 #endif
 
 
@@ -186,7 +186,7 @@ extern "C" {
  @endverbatim
  */
 #ifndef MODBUS_P2P_ENABLE
-    #define  MODBUS_P2P_ENABLE                      1
+    #define  MODBUS_P2P_ENABLE                      0
 #endif
 
 #if MODBUS_P2P_ENABLE

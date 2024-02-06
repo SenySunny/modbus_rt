@@ -19,10 +19,10 @@ extern "C" {
 
 
 #include "modbus_config.h"
+#include "agile_modbus.h"                   //agile_modbus的头文件
 
 #if (MODBUS_TCP_SLAVE_ENABLE) || (MODBUS_TCP_MASTER_ENABLE)
 
-#include "agile_modbus.h"                   //agile_modbus的头文件
 #include "modbus_slave_util.h"              //agile_modbus的从机接口头文件
 #include "modbus_rt_platform_memory.h"
 #include "modbus_rt_platform_thread.h"
