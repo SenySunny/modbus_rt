@@ -289,16 +289,34 @@ ts.open()
 
 ##### 4、FreeRTOS平台
 
-​	FreeRTOS平台，我们计划用了PikaPython的开源硬件 PikaPython-OpenHardware作为demo测试平台，该开发板基于ESP32-S3平台，本身又配置RS485接口，另外网络部分可以用wifi进行测试。
+​	    FreeRTOS平台，我们针对两款硬件平台做测试，一款是PikaPython的开源硬件 PikaPython-OpenHardware，该硬件基于ESP32-S3平台，我们基于ESP-IDF V5.1版本开发，理论上可以兼容所有采用ESP-IDF的ESP32的设备，该开发板完全开源，板载隔离RS485接口，另外网络部分可以用wifi进行测试，实际上我们可以采用任何一款ESP32系列的开发板和最小系统板运行该实例。开发板的开源仓库为：[https://gitee.com/Lyon1998/pikapython_openhardware ](https://gitee.com/Lyon1998/pikapython_openhardware)，开发板示意图如下：
 
 ![PikaPython-OpenHardware](img/PikaPython-OpenHardware.png)
 
-PikaPython-OpenHardware的开源地址为：[https://gitee.com/Lyon1998/pikapython_openhardware ](https://gitee.com/Lyon1998/pikapython_openhardware)
+​	    另外一款平台，我们基于合宙的air780E的4G Cat.1模组，其核心控制器采用移芯的EC618芯片平台，理论上也可以兼容air780EG，air780EP，air780EPV等采用移芯EC618，EC718的模组使用。
 
-平台的测试代码仓库（基于idf V5.1开发环境），我们提供了两个demo，一个是运行modbus_rt的demo，一个是运行pikaPython的demo，工程代码在example\FreeRTOS\PikaPython_OpenHardware目录下：
+​	    我们采用的开发板为开源的pikapython-air780e开发板，其软硬件完全开源，开源仓库为：[https://gitee.com/Lyon1998/pikapython-air780e](https://gitee.com/Lyon1998/pikapython-air780e), 该开发硬件上有隔离RS232，隔离RS485接口，还有其他丰富的扩展模块。开发板的示意图如下：
+
+![air780e](img/air780e.jpg)
+
+###### （1） 基于ESP32，采用ESP-IDF环境
+
+​        平台的测试代码仓库（基于idf V5.1开发环境），我们提供了两个demo，一个是运行modbus_rt的demo，一个是运行pikaPython的demo，工程代码在example\FreeRTOS\PikaPython_OpenHardware目录下：
 
 1. 首先安装idf开发环境，以及vscode 的idf插件，可以参考如下文档：[https://pikapython.com/doc/board_wireless.html ](https://pikapython.com/doc/board_wireless.html), 也可以参考B站的idf开发视频，这里推荐一个视频：[https://space.bilibili.com/1375767826/channel/collectiondetail?sid=846684](https://space.bilibili.com/1375767826/channel/collectiondetail?sid=846684)
-1. 用vscode打开对应的工程文件编译即可。
+1. 用vscode打开对应的工程文件编译下载即可，这里特别需要注意的是，第一个modbus_rt案例，采用直接写死wifi的ssid和password的形式，如果要修改ssid和password，在vscode中按ctrl+p，在弹出的菜单中输入">ESP-IDF:SDK Configuration editor (menuconfig)"进入menuconfig界面。选择左侧的Example Connection Configuration选项卡，修改wifi路由器的SSID和密码等参数信息。
+
+![esp32_wifi](img/esp32_wifi.png)
+
+3. 另外，如果你采用的是ESP32-S3芯片，默认的终端调试串口采用USB-UART接口，希望采用uart0来运行modbus_rt的话，可以在menuconfig的配置项目中的Channel for console output选项，选择为USB Serial/JTAG Controller，来关闭uart0的默认终端输出功能（如果不关闭，会导致uart0作为console端口与modbus通信冲突）。
+
+![esp32_console](img/esp32_console.png)
+
+4. 如果要运行PIKA_PI_WIRELESS_FIRMWARE固件，希望用wifi来运行modbus TCP或者其他基于网络的modbus实例的话，需要确保WiFi已经连接到AP路由上之后再用open函数运行modbus实例，否则，会导致由于网络未连接导致网络的modbus执行失败。
+
+###### （2） 基于air780e，基于C语言，封装pikapython，采用xmake编译
+
+​        基于air780e的案例，可以直接采用pikapython-air780e官方仓库的代码，目前modbus_rt的实例已经与官方仓库同步。仓库地址：[https://gitee.com/Lyon1998/pikapython_openhardware ](https://gitee.com/Lyon1998/pikapython_openhardware)，请按照官方仓库的说明编译和使用。
 
 ##### 5、mosbus_rt与西门子PLC进行通信
 
