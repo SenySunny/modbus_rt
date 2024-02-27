@@ -318,6 +318,8 @@ ts.open()
 
 ​        基于air780e的案例，可以直接采用pikapython-air780e官方仓库的代码，目前modbus_rt的实例已经与官方仓库同步。仓库地址：[https://gitee.com/Lyon1998/pikapython_openhardware ](https://gitee.com/Lyon1998/pikapython_openhardware)，请按照官方仓库的说明编译和使用。
 
+​        目前的air780e平台，考虑到4G Cat.1模组无局域网环境，暂时只适配modbus RTU和modbus ASCII，并没有适配modbus TCP等网络相关的modbus协议。
+
 ##### 5、mosbus_rt与西门子PLC进行通信
 
 ​		因为我们以上4个平台的接口部分都是采用PikaPython封装的API，采用脚本进行通信，所以测试用哪个平台无所谓，西门子PLC我们采用比较常用的S7-1214C的PLC平台，这里仅仅测试modbus TCP，我们提供两个demo：
