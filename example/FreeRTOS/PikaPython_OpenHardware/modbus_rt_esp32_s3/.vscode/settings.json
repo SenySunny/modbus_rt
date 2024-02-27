@@ -1,0 +1,41 @@
+{
+    "C_Cpp.intelliSenseEngine": "default",
+    "idf.adapterTargetName": "esp32s3",
+    "idf.customExtraPaths": "D:\\Espressif\\tools\\xtensa-esp-elf-gdb\\12.1_20221002\\xtensa-esp-elf-gdb\\bin;D:\\Espressif\\tools\\riscv32-esp-elf-gdb\\12.1_20221002\\riscv32-esp-elf-gdb\\bin;D:\\Espressif\\tools\\xtensa-esp32-elf\\esp-12.2.0_20230208\\xtensa-esp32-elf\\bin;D:\\Espressif\\tools\\xtensa-esp32s2-elf\\esp-12.2.0_20230208\\xtensa-esp32s2-elf\\bin;D:\\Espressif\\tools\\xtensa-esp32s3-elf\\esp-12.2.0_20230208\\xtensa-esp32s3-elf\\bin;D:\\Espressif\\tools\\riscv32-esp-elf\\esp-12.2.0_20230208\\riscv32-esp-elf\\bin;D:\\Espressif\\tools\\esp32ulp-elf\\2.35_20220830\\esp32ulp-elf\\bin;D:\\Espressif\\tools\\cmake\\3.24.0\\bin;D:\\Espressif\\tools\\openocd-esp32\\v0.12.0-esp32-20230419\\openocd-esp32\\bin;D:\\Espressif\\tools\\ninja\\1.10.2;D:\\Espressif\\tools\\idf-exe\\1.0.3;D:\\Espressif\\tools\\ccache\\4.8\\ccache-4.8-windows-x86_64;D:\\Espressif\\tools\\dfu-util\\0.11\\dfu-util-0.11-win64;D:\\Espressif\\tools\\esp-rom-elfs\\20230320",
+    "idf.customExtraVars": {
+        "OPENOCD_SCRIPTS": "D:\\Espressif\\tools\\openocd-esp32\\v0.12.0-esp32-20230419/openocd-esp32/share/openocd/scripts",
+        "IDF_CCACHE_ENABLE": "1",
+        "ESP_ROM_ELF_DIR": "D:\\Espressif\\tools\\esp-rom-elfs\\20230320/"
+    },
+    "idf.espIdfPathWin": "D:/Espressif/frameworks/esp-idf-v5.1/",
+    "idf.openOcdConfigs": [
+        "board/esp32s3-builtin.cfg"
+    ],
+    "idf.portWin": "COM4",
+    "idf.pythonBinPathWin": "D:/Espressif/python_env/idf5.1_py3.11_env/Scripts/python.exe",
+    "idf.toolsPathWin": "D:\\Espressif",
+    "files.associations": {
+        "uart.h": "c",
+        "soc_caps.h": "c",
+        "freertos.h": "c",
+        "task.h": "c",
+        "condition_variable": "c",
+        "future": "c",
+        "freertos_uart.h": "c",
+        "esp_log.h": "c",
+        "stdio.h": "c",
+        "modbus_rt_platform_net_socket.h": "c",
+        "netfwd": "c",
+        "cstddef": "c",
+        "functional": "c",
+        "tuple": "c",
+        "type_traits": "c",
+        "tcpip.h": "c",
+        "sys.h": "c",
+        "esp_netif.h": "c",
+        "stdint.h": "c",
+        "esp_netif_ip_addr.h": "c",
+        "netdb.h": "c",
+        "esp_netif_defaults.h": "c"
+    }
+}

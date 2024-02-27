@@ -295,7 +295,10 @@ ts.open()
 
 PikaPython-OpenHardware的开源地址为：[https://gitee.com/Lyon1998/pikapython_openhardware ](https://gitee.com/Lyon1998/pikapython_openhardware)
 
-平台的测试代码仓库（基于idf V5.1开发环境）（暂时还没有移植，后续移植维护）：
+平台的测试代码仓库（基于idf V5.1开发环境），我们提供了两个demo，一个是运行modbus_rt的demo，一个是运行pikaPython的demo，工程代码在example\FreeRTOS\PikaPython_OpenHardware目录下：
+
+1. 首先安装idf开发环境，以及vscode 的idf插件，可以参考如下文档：[https://pikapython.com/doc/board_wireless.html ](https://pikapython.com/doc/board_wireless.html), 也可以参考B站的idf开发视频，这里推荐一个视频：[https://space.bilibili.com/1375767826/channel/collectiondetail?sid=846684](https://space.bilibili.com/1375767826/channel/collectiondetail?sid=846684)
+1. 用vscode打开对应的工程文件编译即可。
 
 ##### 5、mosbus_rt与西门子PLC进行通信
 

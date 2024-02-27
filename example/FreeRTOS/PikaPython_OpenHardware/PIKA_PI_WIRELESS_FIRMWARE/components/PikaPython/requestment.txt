@@ -1,0 +1,15 @@
+pikascript-core==v1.12.5
+PikaStdLib==v1.12.5
+PikaStdDevice==v2.4.0
+ESP32==v0.4.2
+pika_libc==v1.0.2
+time==v0.1.9
+os==v0.1.2
+unittest==v0.1.4
+network==v0.1.3
+socket==v0.1.8
+json==v0.1.5
+_thread==v0.0.6
+eventloop==v0.1.0
+fsm==v0.1.0
+modbus_rt==aba17149e169456e9df1263569e5c9455eff91f7

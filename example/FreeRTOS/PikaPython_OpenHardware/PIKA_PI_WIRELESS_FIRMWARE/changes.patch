@@ -1,0 +1,43 @@
+diff --git a/PIKA_PI_WIRELESS_FIRMWARE/components/PikaPython/pikascript-core/PikaObj.c b/PIKA_PI_WIRELESS_FIRMWARE/components/PikaPython/pikascript-core/PikaObj.c
+index 8fdb0ed..882ca77 100644
+--- a/PIKA_PI_WIRELESS_FIRMWARE/components/PikaPython/pikascript-core/PikaObj.c
++++ b/PIKA_PI_WIRELESS_FIRMWARE/components/PikaPython/pikascript-core/PikaObj.c
+@@ -3982,3 +3982,18 @@ int32_t objList_forEach(PikaObj* self,
+     }
+     return 0;
+ }
++
++void pika_sleep_ms(uint32_t ms) {
++    int64_t tick = pika_platform_get_tick();
++    while (1) {
++        pika_platform_thread_yield();
++#if PIKA_EVENT_ENABLE
++        if (!pika_GIL_isInit()) {
++            _VMEvent_pickupEvent();
++        }
++#endif
++        if (pika_platform_get_tick() - tick >= ms) {
++            break;
++        }
++    }
++}
+diff --git a/PIKA_PI_WIRELESS_FIRMWARE/components/PikaPython/pikascript-core/PikaObj.h b/PIKA_PI_WIRELESS_FIRMWARE/components/PikaPython/pikascript-core/PikaObj.h
+index 510af9a..ebed648 100644
+--- a/PIKA_PI_WIRELESS_FIRMWARE/components/PikaPython/pikascript-core/PikaObj.h
++++ b/PIKA_PI_WIRELESS_FIRMWARE/components/PikaPython/pikascript-core/PikaObj.h
+@@ -25,6 +25,7 @@
+  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  * SOFTWARE.
+  */
++#include <stdint.h>
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
+@@ -771,6 +772,7 @@ int32_t objDict_forEach(PikaObj* self,
+                                               Arg* valEach,
+                                               void* context),
+                         void* context);
++void pika_sleep_ms(uint32_t ms);
+ 
+ #endif
+ #ifdef __cplusplus

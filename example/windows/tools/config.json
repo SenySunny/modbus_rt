@@ -1,0 +1,13 @@
+{
+    "net_find": {
+        "dev_port": 502,
+        "info_addr": 8000,
+        "net_dev": [
+            {
+                "dev_name": "apm32_io",
+                "net_change_addr_len": 24,
+                "net_change_addr_start": 2008
+            }
+        ]
+    }
+}
