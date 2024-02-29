@@ -97,6 +97,7 @@ static int modbus_slave_insert_val(agile_modbus_slave_util_map_t *map_t, agile_m
         } else if(map_t->start_addr < util_tab->start_addr) {
             if(util_tab->pre != NULL) {
                 map_t->pre = util_tab->pre;
+                util_tab->pre->next = map_t;
             }
             map_t->next = util_tab;
             util_tab->pre = map_t;
