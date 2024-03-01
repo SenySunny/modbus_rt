@@ -36,7 +36,13 @@
 
 ### 二、重大的更新记录
 
-##### 1、2024-01-31更新内容
+##### 1、2024-03-01更新内容
+
+1. 修复了modbus_rt在slave模式下，如果绑定寄存器乱序绑定modbus slave寄存器的时候会导致链表数据丢失。（之前测试都是按照从小到大，或者从大到小，没有测试全面，如果地址顺序是乱的，则会出错，最新版本已经修复）——感谢网友“皓月”发现bug。
+2. 增加了modbus_rt在freeRTOS系统的支持，并提供了在ESP32和air780e硬件平台的demo示例。
+3. 增加了cmsis_rtos2的RTOS兼容层的platform接口移植（并提供了基于freertos的cmsis_rtos2的兼容层）。该接口由网友“皓月”提供并移植验证。本人暂时没有验证，针对非rt-thread或则freeRTOS的用户，可以尝试使用cmsis_rtos2的兼容层使用。本人后续抽空验证之后，会提供验证的demo示例。
+
+##### 2、2024-01-31更新内容
 
  1. 把SLAVE_DATA_DEVICE_BINDING宏定义，修改为SLAVE_DATA_DEVICE_BINDING宏定义和dev_binding标志变量共同决定是否需要把SLAVE的硬件外设绑定到寄存器当中。所以在设备需要绑定硬件外设时，需要额外调用 modbus_xxx_set_dev_binding(xxx_modbus_device_t dev, int flag)函数来实现绑定变量，否则默认为不绑定，可以作为完全独立的modbus实例存在。这样做的目的是为了在交互端，PC上基于DTU的代码可以几乎不用移植的在嵌入式设备上运行。
 
