@@ -15,6 +15,13 @@
 
 #if (MODBUS_RTU_SLAVE_ENABLE) || (MODBUS_RTU_MASTER_ENABLE)
 
+#if  MODBUS_P2P_ENABLE
+    #include "modbus_p2p.h"
+    int modbus_slave_special_callback(agile_modbus_t *ctx, struct agile_modbus_slave_info *slave_info);
+    uint8_t compute_meta_length_after_function_callback(agile_modbus_t *ctx, int function, agile_modbus_msg_type_t msg_type);
+    int compute_data_length_after_meta_callback(agile_modbus_t *ctx, uint8_t *msg,int msg_length, agile_modbus_msg_type_t msg_type);
+#endif
+
 /**
  @verbatim
     如果开启了modbus slave的支持，则需要添加一些函数声明，函数实现在modbus_slave.c中
@@ -28,6 +35,9 @@
     int modbus_slave_clear_val(agile_modbus_slave_util_t *util);
     int modbus_slave_read(agile_modbus_slave_util_t *util, modbus_register_type_t type, int addr, int quantity, void *ptr_data);
     int modbus_slave_write(agile_modbus_slave_util_t *util, modbus_register_type_t type, int addr, int quantity, void *ptr_data);
+#if SLAVE_DATA_DEVICE_BINDING
+    int modbus_slave_util_dev_binding(agile_modbus_slave_util_t *util, int flag);
+#endif
 #endif
 
 /**
@@ -325,10 +335,14 @@ static void modbus_rtu_slave_entry(void *parameter) {
     rtu_slave_data_t    data = (rtu_slave_data_t)dev->data;
     int send_len = dev->send_len;
     int read_len = dev->read_len;      
-    agile_modbus_t *ctx = dev->ctx;
-
     agile_modbus_rtu_init(&(dev->ctx_rtu), dev->ctx_send_buf, send_len, dev->ctx_read_buf, read_len);
-    agile_modbus_set_slave(ctx, data->addr);
+    agile_modbus_set_slave(dev->ctx, data->addr);
+#if MODBUS_P2P_ENABLE
+    if(0 != dev->p2p_flag) {
+        agile_modbus_set_compute_meta_length_after_function_cb(dev->ctx, compute_meta_length_after_function_callback);
+        agile_modbus_set_compute_data_length_after_meta_cb(dev->ctx, compute_data_length_after_meta_callback);
+    }
+#endif
     /* 启动线程运行标志 */
     modbus_rt_mutex_lock(&(dev->mutex));
     dev->thread_flag = 1;           //线程运行
@@ -345,23 +359,23 @@ static void modbus_rtu_slave_entry(void *parameter) {
                 modbus_rt_sem_post(&(dev->sem));
                 return ;
             }
-            read_len = modbus_rt_serial_receive(dev->serial, ctx->read_buf, ctx->read_bufsz, MODBUS_RTU_TIME_OUT, dev->byte_timeout);
+            read_len = modbus_rt_serial_receive(dev->serial, dev->ctx->read_buf, dev->ctx->read_bufsz, MODBUS_RTU_TIME_OUT, dev->byte_timeout);
             if (read_len <= 0) {
                 continue;
             }
 #if MODBUS_ASCII_SLAVE_ENABLE
             if(dev->ascii_flag) {
-                modbus_ascii2rtu(ctx->read_buf, &read_len);
+                modbus_ascii2rtu(dev->ctx->read_buf, &read_len);
             }
 #endif 
-            send_len = agile_modbus_slave_handle(ctx, read_len, data->slave_strict, agile_modbus_slave_util_callback, &data->util, NULL);
+            send_len = agile_modbus_slave_handle(dev->ctx, read_len, data->slave_strict, agile_modbus_slave_util_callback, &data->util, NULL);
             if (send_len > 0) {
 #if MODBUS_ASCII_SLAVE_ENABLE
                 if(dev->ascii_flag) {
-                    modbus_rtu2ascii(ctx->send_buf, &send_len);
+                    modbus_rtu2ascii(dev->ctx->send_buf, &send_len);
                 }
 #endif    
-                modbus_rt_serial_send(dev->serial, ctx->send_buf, send_len);
+                modbus_rt_serial_send(dev->serial, dev->ctx->send_buf, send_len);
             }
         }
 
@@ -717,6 +731,50 @@ static int modbus_rtu_master_excuse_run(rtu_modbus_device_t dev) {
             }
             data->ret = MODBUS_RT_EOK;
         } break;
+#if MODBUS_P2P_MASTER_ENABLE
+#if MODBUS_P2P_SEND_ENABLE
+        case AGILE_MODBUS_FC_TRANS_FILE: {
+            modbus_p2p_master_info_t *p2p_info = &g_modbus_p2p_master_info;
+            send_len = agile_modbus_serialize_raw_request(ctx, p2p_info->raw_req, p2p_info->raw_req_len);
+            read_len = modbus_rtu_master_txrx(dev,ctx,send_len);
+            if (read_len < 0) {
+                 data->ret = read_len;
+                break;
+            }
+            int rc = agile_modbus_deserialize_raw_response(ctx, read_len);
+            if (rc < 0) {
+                data->ret = -MODBUS_RT_ERROR;
+                break;
+            }
+            int flag = ctx->read_buf[ctx->backend->header_length + 3];
+            if(0x01 != flag) {
+                data->ret = -MODBUS_RT_ERROR;
+                break;
+            }
+            data->ret = MODBUS_RT_EOK;
+        } break;
+#endif
+#if MODBUS_P2P_RECV_ENABLE
+        case AGILE_MODBUS_FC_READ_FILE: {
+            modbus_p2p_master_info_t *p2p_info = &g_modbus_p2p_master_info;
+            send_len = agile_modbus_serialize_raw_request(ctx, p2p_info->raw_req, p2p_info->raw_req_len);
+            read_len = modbus_rtu_master_txrx(dev,ctx,send_len);
+            if (read_len < 0) {
+                 data->ret = read_len;
+                break;
+            }
+            int rc = agile_modbus_deserialize_raw_response(ctx, read_len);
+            if (rc < 0) {
+                data->ret = -MODBUS_RT_ERROR;
+                break;
+            }
+            //把数据返回到上传程序线程操作
+            int cmd_data_len = (ctx->read_buf[ctx->backend->header_length + 3] << 8) + ctx->read_buf[ctx->backend->header_length + 4];
+            memcpy(&(p2p_info->raw_req[2]), &ctx->read_buf[ctx->backend->header_length + 1], cmd_data_len + 4);
+            data->ret = MODBUS_RT_EOK;
+        } break;
+#endif
+#endif
         default:
         {
             data->ret =-MODBUS_RT_ERROR;
@@ -734,7 +792,7 @@ static int modbus_rtu_master_excuse_run(rtu_modbus_device_t dev) {
  *       
  */
 static void modbus_rtu_master_net_entry(rtu_modbus_device_t dev) {
-    if((NULL == dev) || (OVER_NET != dev->over_type) || (0 > dev->port) || 
+    if((NULL == dev) || (OVER_NET != dev->over_type) || 
     ((SOCK_STREAM  != dev->type) && (SOCK_DGRAM != dev->type))) {
         return ;
     }
@@ -771,7 +829,7 @@ static void modbus_rtu_master_net_entry(rtu_modbus_device_t dev) {
             modbus_rtu_master_excuse_run(dev);
             /* fuction执行完毕 */
             modbus_rt_sem_post(&(data->completion));
-        } else if ((SOCK_STREAM == dev->type) && (0 < dev->sock)) {
+        } else if (((SOCK_STREAM == dev->type) || (SOCK_DGRAM == dev->type)) && (0 < dev->sock)) {
             sock_timeout = 0;
             //检错socket是不是被远程的服务器端断开,仅限TCP使用
             int read_len = 0;
@@ -785,7 +843,7 @@ static void modbus_rtu_master_net_entry(rtu_modbus_device_t dev) {
 
             //设置超时时间为50ms
             timeout.tv_sec = 0;
-            timeout.tv_usec = 100000;
+            timeout.tv_usec = 10000;
 
             nready = select(maxfd + 1, &sock_read_set, NULL, NULL, &timeout);
             //负数表示select错误
@@ -853,6 +911,12 @@ static void modbus_rtu_master_entry(void *parameter) {
     int send_len = dev->send_len;
     int read_len = dev->read_len;      
     agile_modbus_rtu_init(&(dev->ctx_rtu), dev->ctx_send_buf, send_len, dev->ctx_read_buf, read_len);
+#if MODBUS_P2P_ENABLE
+    if(0 != dev->p2p_flag) {
+        agile_modbus_set_compute_meta_length_after_function_cb(dev->ctx, compute_meta_length_after_function_callback);
+        agile_modbus_set_compute_data_length_after_meta_cb(dev->ctx, compute_data_length_after_meta_callback);
+    }
+#endif
     /* 启动线程运行标志 */
     modbus_rt_mutex_lock(&(dev->mutex));
     dev->thread_flag = 1;           //线程运行
@@ -1032,7 +1096,13 @@ int modbus_rtu_open(rtu_modbus_device_t dev) {
     if(MODBUS_MASTER == dev->mode) {
         return -MODBUS_RT_EINVAL;
     }
-#endif   
+#endif
+#if  MODBUS_P2P_ENABLE
+    if(dev->p2p_flag) {
+
+        ((rtu_slave_data_t)(dev->data))->util.special_function = modbus_slave_special_callback;
+    }
+#endif
 #endif   
 #if MODBUS_RTU_MASTER_ENABLE
 #if !MODBUS_RTU_SLAVE_ENABLE
@@ -1041,10 +1111,10 @@ int modbus_rtu_open(rtu_modbus_device_t dev) {
     }
 #endif
     rtu_master_data_t data_master = NULL;
+    (void)(data_master);
     if(MODBUS_MASTER == dev->mode) {
         data_master = (rtu_master_data_t)dev->data;
     }
-    (void)(data_master);
 #endif
     if (OVER_NONE == dev->over_type) {
         struct modbus_rt_serial_info info = dev->serial_info;
@@ -1102,8 +1172,18 @@ int modbus_rtu_open(rtu_modbus_device_t dev) {
         return -MODBUS_RT_EINVAL;
 #endif              
     }
+#if MODBUS_P2P_ENABLE
+    if(0 == dev->p2p_flag) {
+        dev->send_len = AGILE_MODBUS_MAX_ADU_LENGTH;
+        dev->read_len = AGILE_MODBUS_MAX_ADU_LENGTH;
+    } else {
+        dev->send_len = P2P_SLAVE_BUF_MAX_LEN;
+        dev->read_len = P2P_SLAVE_BUF_MAX_LEN;
+    }
+#else
     dev->send_len = AGILE_MODBUS_MAX_ADU_LENGTH;
     dev->read_len = AGILE_MODBUS_MAX_ADU_LENGTH;
+#endif
     dev->ctx_send_buf = modbus_rt_calloc(1, dev->send_len);
     if(NULL == dev->ctx_send_buf) {
         if (OVER_NONE == dev->over_type) {
@@ -1327,6 +1407,26 @@ int modbus_rtu_excuse(rtu_modbus_device_t dev, int dir_slave, int type_function,
     return -MODBUS_RT_ERROR;
 }
 
+#if  MODBUS_P2P_ENABLE
+/**
+ * @brief   modbus_rtu_set_p2p_flag:    开启modbus p2p功能数
+ * @param   dev:                        rtu_modbus_device_t 设备
+ * @param   flag:                       0：关闭p2p模式；1：开启p2p模式
+ * @return  int:                        MODBUS_RT_EOK：成功，其他：失败
+ *
+ */
+int modbus_rtu_set_p2p_flag(rtu_modbus_device_t dev, int flag) {
+    if ((NULL == dev)) {
+        return -MODBUS_RT_EINVAL;
+    }
+    if(0 < dev->status) {
+        return -MODBUS_RT_ISOPEN;
+    }
+    dev->p2p_flag = flag;
+    return MODBUS_RT_EOK;
+}
+#endif
+
 #if MODBUS_SERIAL_OVER_TCP_ENABLE || MODBUS_SERIAL_OVER_UDP_ENABLE
 /**
  * @brief   modbus_rtu_set_over_type:   开启modbus rtu over type功能数
@@ -1525,6 +1625,23 @@ int modbus_rtu_set_done_callback(rtu_modbus_device_t dev, int (*done)(agile_modb
     ((rtu_slave_data_t)dev->data)->util.done_callback = done;
     return MODBUS_RT_EOK;
 }
+
+#if SLAVE_DATA_DEVICE_BINDING
+/**
+ * @brief   modbus_rtu_set_dev_binding: 开启slave的设备绑定功能
+ * @param   dev:                        tcp_modbus_device_t设备
+ * @param   flag:                       0：关闭p2p模式；1：开启p2p模式
+ * @return  int:                        MODBUS_RT_EOK：成功，其他：失败
+ *
+ */
+int modbus_rtu_set_dev_binding(rtu_modbus_device_t dev, int flag) {
+    if((NULL == dev) || (NULL == dev->data) || (MODBUS_SLAVE != dev->mode)) {
+        return -MODBUS_RT_EINVAL;
+    }
+    return modbus_slave_util_dev_binding(&(((rtu_slave_data_t)dev->data)->util), flag);
+}
+#endif
+
 #endif
 
 #if MODBUS_RTU_MASTER_ENABLE
@@ -1629,6 +1746,342 @@ int modbus_rtu_excuse_ex(rtu_modbus_device_t dev, int slave, int function,int w_
     modbus_rt_sem_wait(&(data->completion));
     return data->ret;
 }
+
+#if  ((MODBUS_P2P_ENABLE) && (MODBUS_P2P_MASTER_ENABLE))
+
+/**
+ * @brief   modbus_rtu_master_file_entry:  rtu master 文件读写线程函数
+ * @param   parameter: 入口参数，rtu_modbus_device_t设备
+ * @return  无
+ *
+ */
+static void modbus_rtu_master_file_entry(void *parameter) {
+    rtu_modbus_device_t dev = (rtu_modbus_device_t)parameter;
+    rtu_master_data_t    data = (rtu_master_data_t)dev->data;
+    modbus_p2p_master_info_t *p2p_info = &g_modbus_p2p_master_info;
+    uint8_t *raw_req = p2p_info->raw_req;
+    int raw_req_len = p2p_info->raw_req_len;
+    int info_len = sizeof(modbus_rt_file_info_t);
+    int step = 0;
+    while(1) {
+        raw_req_len = 2;
+#if MODBUS_P2P_SEND_ENABLE
+#if (!MODBUS_P2P_RECV_ENABLE)
+        if(MODBUS_READ == p2p_info->dir) {
+            data->ret = -MODBUS_RT_EINVAL;
+            modbus_rt_sem_post(&(p2p_info->sem));
+            return ;
+        }
+#endif
+        if(MODBUS_WRITE == p2p_info->dir) {
+            switch(step) {
+                case 0: {
+                    modbus_rt_mutex_lock(&(dev->mutex));
+                    data->ret = -MODBUS_RT_ERROR;
+                    data->slave_addr = raw_req[0];
+
+                    raw_req[raw_req_len++] = ((uint16_t)TRANS_FILE_CMD_START >> 8);
+                    raw_req[raw_req_len++] = ((uint16_t)TRANS_FILE_CMD_START & 0xFF);
+                    int nb = sizeof(modbus_rt_file_info_t);
+                    raw_req[raw_req_len++] = nb >> 8;
+                    raw_req[raw_req_len++] = nb & 0xFF;
+                    memcpy(raw_req + raw_req_len, &(p2p_info->file_info), info_len);
+                    raw_req_len += info_len;
+                    p2p_info->raw_req_len = raw_req_len;
+                    data->function = raw_req[1];
+                    modbus_rt_mutex_unlock(&(dev->mutex));
+                    //等待执行完毕
+                    modbus_rt_sem_wait(&(data->completion));
+                    if(MODBUS_RT_EOK != data->ret)
+                    {
+                        modbus_rt_sem_post(&(p2p_info->sem));
+                        return ;
+                    }
+                    step = 1;
+                } break;
+                case 1: {
+                    modbus_rt_mutex_lock(&(dev->mutex));
+                    data->ret = -MODBUS_RT_ERROR;
+                    data->slave_addr = raw_req[0];
+
+                    raw_req[raw_req_len++] = ((uint16_t)TRANS_FILE_CMD_DATA >> 8);
+                    raw_req[raw_req_len++] = ((uint16_t)TRANS_FILE_CMD_DATA & 0xFF);
+                    int nb_pos = raw_req_len;
+                    raw_req_len += 3;
+                    int recv_bytes = modbus_rt_file_read_file(p2p_info->fd, raw_req + raw_req_len, P2P_SLAVE_BUF_LEN);
+                    raw_req_len += recv_bytes;
+                    p2p_info->write_file_size += recv_bytes;
+                    int nb = recv_bytes + 1;
+                    raw_req[nb_pos] = nb >> 8;
+                    raw_req[nb_pos + 1] = nb & 0xFF;
+                    if (P2P_SLAVE_BUF_LEN > recv_bytes) {
+                        raw_req[nb_pos + 2] = TRANS_FILE_FLAG_END;
+                        step = 2;
+                    } else {
+                        raw_req[nb_pos + 2] = TRANS_FILE_FLAG_NOT_END;
+                    }
+                    p2p_info->raw_req_len = raw_req_len;
+                    data->function = raw_req[1];
+                    modbus_rt_mutex_unlock(&(dev->mutex));
+                    //等待执行完毕
+                    modbus_rt_sem_wait(&(data->completion));
+                    if(MODBUS_RT_EOK != data->ret)
+                    {
+                        modbus_rt_sem_post(&(p2p_info->sem));
+                        return ;
+                    }
+                } break;
+                default: {
+                    modbus_rt_sem_post(&(p2p_info->sem));
+                    return ;
+                } break;
+            }
+        }
+#endif
+#if MODBUS_P2P_RECV_ENABLE
+#if (!MODBUS_P2P_SEND_ENABLE)
+        if(MODBUS_WRITE == p2p_info->dir) {
+            data->ret = -MODBUS_RT_EINVAL;
+            modbus_rt_sem_post(&(p2p_info->sem));
+            return ;
+        }
+#endif
+        if(MODBUS_READ == p2p_info->dir) {
+            switch(step) {
+                case 0: {
+                    modbus_rt_mutex_lock(&(dev->mutex));
+                    data->ret = -MODBUS_RT_ERROR;
+                    data->slave_addr = raw_req[0];
+
+                    raw_req[raw_req_len++] = ((uint16_t)TRANS_FILE_CMD_START >> 8);
+                    raw_req[raw_req_len++] = ((uint16_t)TRANS_FILE_CMD_START & 0xFF);
+                    int nb = sizeof(modbus_rt_file_info_t);
+                    raw_req[raw_req_len++] = nb >> 8;
+                    raw_req[raw_req_len++] = nb & 0xFF;
+                    memcpy(raw_req + raw_req_len, &(p2p_info->file_info), info_len);
+                    raw_req_len += info_len;
+                    p2p_info->raw_req_len = raw_req_len;
+                    data->function = raw_req[1];
+                    modbus_rt_mutex_unlock(&(dev->mutex));
+                    //等待执行完毕
+                    modbus_rt_sem_wait(&(data->completion));
+                    if(MODBUS_RT_EOK != data->ret)
+                    {
+                        modbus_rt_sem_post(&(p2p_info->sem));
+                        return ;
+                    }
+
+                    uint16_t cmd_recv =  ((uint16_t)(raw_req[2] << 8)) + raw_req[3];
+                    uint16_t len_recv =  ((uint16_t)(raw_req[4] << 8)) + raw_req[5];
+                    if((TRANS_FILE_CMD_START != cmd_recv) || (nb != len_recv)) {
+                        data->ret = -MODBUS_RT_ERROR;
+                        modbus_rt_sem_post(&(p2p_info->sem));
+                        return ;
+                    }
+                    p2p_info->fd = modbus_rt_file_wb_open(p2p_info->file_name);
+                    if(0 >= p2p_info->fd) {
+                        data->ret = -MODBUS_RT_ERROR;
+                        modbus_rt_sem_post(&(p2p_info->sem));
+                        return ;
+                    }
+                    memcpy(&(p2p_info->file_info), &(raw_req[6]), len_recv);
+                    p2p_info->read_file_serial = 0;
+                    step = 1;
+                } break;
+                case 1: {
+                    modbus_rt_mutex_lock(&(dev->mutex));
+                    data->ret = -MODBUS_RT_ERROR;
+                    data->slave_addr = raw_req[0];
+
+                    p2p_info->read_file_serial++;
+                    raw_req[raw_req_len++] = ((uint16_t)TRANS_FILE_CMD_DATA >> 8);
+                    raw_req[raw_req_len++] = ((uint16_t)TRANS_FILE_CMD_DATA & 0xFF);
+                    int len = 0x0002;
+                    raw_req[raw_req_len++] = len >> 8;
+                    raw_req[raw_req_len++] = len & 0xFF;
+                    raw_req[raw_req_len++] = (p2p_info->read_file_serial) >> 8;
+                    raw_req[raw_req_len++] = (p2p_info->read_file_serial) & 0xFF;
+
+                    p2p_info->raw_req_len = raw_req_len;
+                    data->function = raw_req[1];
+                    modbus_rt_mutex_unlock(&(dev->mutex));
+                    //等待执行完毕
+                    modbus_rt_sem_wait(&(data->completion));
+                    if(MODBUS_RT_EOK != data->ret)
+                    {
+                        modbus_rt_sem_post(&(p2p_info->sem));
+                        return ;
+                    }
+                    uint16_t cmd_recv =  ((uint16_t)(raw_req[2] << 8)) + raw_req[3];
+                    uint16_t len_recv =  ((uint16_t)(raw_req[4] << 8)) + raw_req[5];
+                    if((TRANS_FILE_CMD_DATA != cmd_recv) || (0 >= p2p_info->fd)) {
+                        data->ret = -MODBUS_RT_ERROR;
+                        modbus_rt_sem_post(&(p2p_info->sem));
+                        return ;
+                    }
+                    int flag = raw_req[6];
+                    int file_len = len_recv -1;
+                    data->ret = modbus_rt_file_write_file(p2p_info->fd, &(raw_req[7]), file_len);
+                    if(0 >= data->ret) {
+                        data->ret = -MODBUS_RT_ERROR;
+                        modbus_rt_sem_post(&(p2p_info->sem));
+                        return ;
+                    } else {
+                        data->ret = MODBUS_RT_EOK;
+                    }
+                    p2p_info->write_file_size += file_len;
+                    if (0 == flag) {
+                        step = 2;
+                    }
+                } break;
+                default: {
+                    modbus_rt_sem_post(&(p2p_info->sem));
+                    return ;
+                } break;
+            }
+        }
+#endif
+    }
+}
+
+/**
+ * @brief   modbus_rtu_excuse_file:  modbus rtu master的文件上传和下载函数
+ *          该函数为阻塞函数，执行完成或者超时后返回(采用信号量机制，不影响其他线程运行)。
+ *
+ * @param   dev:                rtu_modbus_device_t 设备
+ * @param   slave:              modbus slave的地址
+ * @param   dir:                MODBUS_WRITE（传输文件到slave设备）， MODBUS_READ（从slave设备中读取文件）；
+ * @param   file_dev:           slave设备中的文件名称（绝对路径）
+ * @param   file_master:        master设备中的文件名称（绝对路径）
+ * @return  int:                MODBUS_RT_EOK：成功，其他：失败
+ *
+ */
+int modbus_rtu_excuse_file(rtu_modbus_device_t dev, int slave, modbus_excuse_dir_t dir, char *file_dev, char *file_master) {
+    int ret = 0;
+    if((NULL == dev) || (NULL == dev->data) || ((MODBUS_READ != dir) && (MODBUS_WRITE != dir)) ||
+    (1 != dev->status)) {
+        return -MODBUS_RT_EINVAL;
+    }
+    rtu_master_data_t    data = (rtu_master_data_t)dev->data;
+#if MODBUS_P2P_SEND_ENABLE
+#if (!MODBUS_P2P_RECV_ENABLE)
+    if(MODBUS_READ == dir) {
+        return -MODBUS_RT_EINVAL;
+    }
+#endif
+    if(MODBUS_WRITE == dir) {
+        modbus_p2p_master_info_t *p2p_info = &g_modbus_p2p_master_info;
+        if(0 < p2p_info->fd) {
+            modbus_rt_file_close(p2p_info->fd);
+            p2p_info->fd = 0;
+        }
+
+        p2p_info->dir = MODBUS_WRITE;
+        p2p_info->fd = modbus_rt_file_get_info(file_dev, file_master, &(p2p_info->file_info));
+        if(0 >= p2p_info->fd) {
+            return -MODBUS_RT_EIO;
+        }
+        p2p_info->raw_req[0] = slave;
+        p2p_info->raw_req[1] = AGILE_MODBUS_FC_TRANS_FILE;
+
+        p2p_info->write_file_size = 0;
+        ret = modbus_rt_sem_init(&(p2p_info->sem));
+        if(MODBUS_RT_EOK != ret) {
+            modbus_rt_file_close(p2p_info->fd);
+            p2p_info->fd = 0;
+            return -MODBUS_RT_ENOMEM;
+        }
+        char str_name[MODBUS_RT_NAME_MAX] = {0};
+        sprintf(str_name,"s%d",p2p_info->fd);
+        p2p_info->thread = modbus_rt_thread_init(str_name, modbus_rtu_master_file_entry,
+            dev, MODBUS_THREAD_STACK_SIZE, MODBUS_THREAD_PRIO, 10);
+        if(NULL != p2p_info->thread) {
+            modbus_rt_thread_startup(p2p_info->thread);
+        } else {
+            modbus_rt_file_close(p2p_info->fd);
+            p2p_info->fd = 0;
+            modbus_rt_sem_destroy(&(p2p_info->sem));
+            return -MODBUS_RT_EINVAL;
+        }
+        modbus_rt_sem_wait(&(p2p_info->sem));
+
+        if(0 < p2p_info->fd) {
+            modbus_rt_file_close(p2p_info->fd);
+            p2p_info->fd= 0;
+        }
+        modbus_rt_sem_destroy(&(p2p_info->sem));
+        modbus_rt_thread_destroy(p2p_info->thread);
+        if(MODBUS_RT_EOK != data->ret)
+        {
+            return data->ret;
+        }
+        return MODBUS_RT_EOK;
+    }
+#endif
+#if MODBUS_P2P_RECV_ENABLE
+#if (!MODBUS_P2P_SEND_ENABLE)
+    if(MODBUS_WRITE == dir) {
+        return -MODBUS_RT_EINVAL;
+    }
+#endif
+    if(MODBUS_READ == dir) {
+        modbus_p2p_master_info_t *p2p_info = &g_modbus_p2p_master_info;
+        if(0 < p2p_info->fd) {
+            modbus_rt_file_close(p2p_info->fd);
+            p2p_info->fd = 0;
+        }
+        if(NULL == file_dev) {
+            return -MODBUS_RT_EINVAL;
+        }
+        p2p_info->dir = MODBUS_READ;
+        int len_file = strlen(file_dev);
+        memcpy(p2p_info->file_info.file_name, file_dev, len_file);
+        p2p_info->file_info.file_name[len_file] = 0;
+        if(NULL != file_master) {
+            len_file = strlen(file_master);
+            memcpy(p2p_info->file_name, file_master, len_file);
+            p2p_info->file_name[len_file] = 0;
+        } else {
+            memcpy(p2p_info->file_name, file_dev, len_file);
+            p2p_info->file_name[len_file] = 0;
+        }
+
+        p2p_info->raw_req[0] = slave;
+        p2p_info->raw_req[1] = AGILE_MODBUS_FC_READ_FILE;
+
+        p2p_info->write_file_size = 0;
+        ret = modbus_rt_sem_init(&(p2p_info->sem));
+        if(MODBUS_RT_EOK != ret) {
+            p2p_info->fd = 0;
+            return -MODBUS_RT_ENOMEM;
+        }
+        char str_name[MODBUS_RT_NAME_MAX] = {0};
+        sprintf(str_name,"r%d",p2p_info->fd);
+        p2p_info->thread = modbus_rt_thread_init(str_name, modbus_rtu_master_file_entry,
+            dev, MODBUS_THREAD_STACK_SIZE, MODBUS_THREAD_PRIO, 10);
+        if(NULL != p2p_info->thread) {
+            modbus_rt_thread_startup(p2p_info->thread);
+        } else {
+            modbus_rt_sem_destroy(&(p2p_info->sem));
+            return -MODBUS_RT_EINVAL;
+        }
+        modbus_rt_sem_wait(&(p2p_info->sem));
+        if(0 < p2p_info->fd) {
+            modbus_rt_file_close(p2p_info->fd);
+            p2p_info->fd = 0;
+        }
+        modbus_rt_sem_destroy(&(p2p_info->sem));
+        modbus_rt_thread_destroy(p2p_info->thread);
+        if(MODBUS_RT_EOK != data->ret)
+        {
+            return data->ret;
+        }
+        return MODBUS_RT_EOK;
+    }
+#endif
+    return MODBUS_RT_EOK;
+}
+#endif
 
 #endif
 

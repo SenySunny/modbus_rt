@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "thread": "c"
+        "thread": "c",
+        "device_data.h": "c"
     }
 }
