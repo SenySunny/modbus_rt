@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "thread": "c",
-        "device_data.h": "c"
+        "device_data.h": "c",
+        "xutility": "c"
     }
 }

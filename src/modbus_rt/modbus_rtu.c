@@ -829,7 +829,7 @@ static void modbus_rtu_master_net_entry(rtu_modbus_device_t dev) {
             modbus_rtu_master_excuse_run(dev);
             /* fuction执行完毕 */
             modbus_rt_sem_post(&(data->completion));
-        } else if ((SOCK_STREAM == dev->type) && (0 < dev->sock)) {
+        } else if (((SOCK_STREAM == dev->type) || (SOCK_DGRAM == dev->type)) && (0 < dev->sock)) {
             sock_timeout = 0;
             //检错socket是不是被远程的服务器端断开,仅限TCP使用
             int read_len = 0;
@@ -843,7 +843,7 @@ static void modbus_rtu_master_net_entry(rtu_modbus_device_t dev) {
 
             //设置超时时间为50ms
             timeout.tv_sec = 0;
-            timeout.tv_usec = 100000;
+            timeout.tv_usec = 10000;
 
             nready = select(maxfd + 1, &sock_read_set, NULL, NULL, &timeout);
             //负数表示select错误
