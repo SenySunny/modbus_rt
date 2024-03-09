@@ -166,7 +166,7 @@ extern "C" {
     #define TCP_MODBUS_NUMS_ENABLE                  1
 #endif
 
-#if MODBUS_TCP_SLAVE_ENABLE
+#if TCP_MODBUS_NUMS_ENABLE
     #ifndef TCP_MODBUS_NUMS
         #define TCP_MODBUS_NUMS                     7
     #endif
