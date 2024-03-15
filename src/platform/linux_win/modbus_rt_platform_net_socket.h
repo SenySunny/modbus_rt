@@ -60,7 +60,7 @@ int modbus_rt_net_setsockopt(int fd, int level, int optname, const void *optval,
 
 #if MODBUS_TCP_MASTER_ENABLE || (MODBUS_RTU_MASTER_ENABLE && MODBUS_SERIAL_OVER_TCP_ENABLE)
     int modbus_rt_tcp_client_init(char* ipaddr, unsigned int port, char* saddr, unsigned int sport);
-    int modbus_rt_net_addr2ip(char* saddr, char *ip);
+    int modbus_rt_net_addr2ip(const char* saddr, char *ip);
 #endif
 
 #if MODBUS_TCP_SLAVE_FOR_UDP_ENABLE || MODBUS_TCP_MASTER_FOR_UDP_ENABLE || MODBUS_SERIAL_OVER_UDP_ENABLE

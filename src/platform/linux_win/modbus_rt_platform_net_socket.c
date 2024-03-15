@@ -162,7 +162,7 @@ int modbus_rt_tcp_client_init(char* ipaddr, unsigned int port, char* saddr, unsi
     return cfd;
 }
 
-int modbus_rt_net_addr2ip(char* saddr, char *ip)
+int modbus_rt_net_addr2ip(const char* saddr, char *ip)
 {
 #if defined(_WIN32)     //确保再没有创建socket的时候可以使用getaddrinfo函数
     modbus_rt_init_winsock();
