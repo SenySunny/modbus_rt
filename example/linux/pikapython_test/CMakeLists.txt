@@ -17,6 +17,7 @@ set(MODBUS_FILE
     ../../../src/modbus_rt/modbus_rtu.c
     ../../../src/modbus_rt/modbus_slave.c
     ../../../src/modbus_rt/modbus_tcp.c
+    ../../../src/platform/linux_win/modbus_rt_platform_file.c
     ../../../src/platform/linux_win/modbus_rt_platform_memory.c
     ../../../src/platform/linux_win/modbus_rt_platform_net_socket.c
     ../../../src/platform/linux_win/modbus_rt_platform_serial.c
