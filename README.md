@@ -322,7 +322,7 @@ ts.open()
 
 ###### （2） 基于air780e，基于C语言，封装pikapython，采用xmake编译
 
-​        基于air780e的案例，可以直接采用pikapython-air780e官方仓库的代码，目前modbus_rt的实例已经与官方仓库同步。仓库地址：[https://gitee.com/Lyon1998/pikapython_openhardware ](https://gitee.com/Lyon1998/pikapython_openhardware)，请按照官方仓库的说明编译和使用。
+​        基于air780e的案例，可以直接采用pikapython-air780e官方仓库的代码，目前modbus_rt的实例已经与官方仓库同步。仓库地址：[https://gitee.com/Lyon1998/pikapython-air780e ](https://gitee.com/Lyon1998/pikapython-air780e)，请按照官方仓库的说明编译和使用。
 
 ​        目前的air780e平台，考虑到4G Cat.1模组无局域网环境，暂时只适配modbus RTU和modbus ASCII，并没有适配modbus TCP等网络相关的modbus协议。
 
