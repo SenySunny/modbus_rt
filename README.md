@@ -1,5 +1,11 @@
 # modbus_rt：纯C实现的跨平台modbus协议通信库
 
+<p>
+	<a href="README_en.md" >English</a> |
+	<a>中文页</a>
+</p> 
+
+
 该项目的演示视频，详见：
 
 ​	B站：https://www.bilibili.com/video/BV1cc411m72m/
@@ -66,7 +72,7 @@
 
 ![slave_demo_qt](img/slave_demo_qt.png)
 
-1. pikapython_test测试程序基于pikapython搭建了modbus_rt的python运行环境，我们可以直接执行python程序测试modbus通信。也可以在REPL交互式终端中运行测试，该demo可以运行所有的modbus实例。在```example\code_py```中有我们写好的modbus测试程序。同时为了方便测试。同时我们提供了编译完成之后的可执行程序，在```example\windows\pikapython_test_release```目录下，可以直接双击```pikapython.exe```直接运行REPL环境，也可以在终端中输入```pikapython xxx.py```运行对应的py文件（注意需要先把终端运行目录运行到该目录下，把需要执行的程序也拷贝到该目录下）。
+2. 一、介绍
 
 这里我们简单测试用pikapython_test程序，运行```rtu_master.py```、```tcp_master.py```、```udp_master.py```来进行基本功能测试，详细测试方法可以参考演示视频（这里就不赘述了）：
 
