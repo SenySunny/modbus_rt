@@ -7,6 +7,7 @@
  * Date           Author       Notes
  * 2023-08-29     SenyPC       the first version
  */
+
 #include "freertos_uart.h"
 #include <ctype.h>
 #include <string.h>
@@ -14,13 +15,13 @@
 #define ESP32_UART_BUF_SIZE (1024)
 
 #ifdef RTU_USING_UART0
-    SemaphoreHandle_t _rx0_notice = NULL;
+    modbus_rt_sem_t _rx0_notice = {0};
 #endif
 #ifdef RTU_USING_UART1
-    SemaphoreHandle_t _rx1_notice = NULL;
+    modbus_rt_sem_t _rx1_notice = {0};
 #endif
 #ifdef RTU_USING_UART2
-    SemaphoreHandle_t _rx2_notice = NULL;
+    modbus_rt_sem_t _rx2_notice = {0};
 #endif
 
 void uart_sem_give(uart_type_dev *serial);
@@ -63,8 +64,7 @@ int uart_sem_create(uart_type_dev *serial) {
     }
 #if defined(RTU_USING_UART0)
     if(serial->uartPort == 0) {
-        _rx0_notice = xSemaphoreCreateBinary();
-        if (_rx0_notice == NULL) {
+        if (modbus_rt_sem_init(&_rx0_notice) != 0) {
             return -1;
         }
     }
@@ -72,8 +72,7 @@ int uart_sem_create(uart_type_dev *serial) {
 
 #if defined(RTU_USING_UART1)
     if(serial->uartPort == 1) {
-        _rx1_notice = xSemaphoreCreateBinary();
-        if (_rx1_notice == NULL) {
+        if (modbus_rt_sem_init(&_rx1_notice) != 0) {
             return -1;
         }
     }
@@ -81,8 +80,7 @@ int uart_sem_create(uart_type_dev *serial) {
 
 #if defined(RTU_USING_UART2)
     if(serial->uartPort == 2) {
-        _rx2_notice = xSemaphoreCreateBinary();
-        if (_rx2_notice == NULL) {
+        if (modbus_rt_sem_init(&_rx2_notice) != 0) {
             return -1;
         }
     }
@@ -102,19 +100,19 @@ void uart_sem_delete(uart_type_dev *serial) {
     }
 #if defined(RTU_USING_UART0)
     if(serial->uartPort == 0) {
-        vSemaphoreDelete(_rx0_notice);
+        modbus_rt_sem_destroy(&_rx0_notice);
     }
 #endif
 
 #if defined(RTU_USING_UART1)
     if(serial->uartPort == 1) {
-        vSemaphoreDelete(_rx1_notice);
+        modbus_rt_sem_destroy(&_rx1_notice);
     }
 #endif
 
 #if defined(RTU_USING_UART2)
     if(serial->uartPort == 2) {
-        vSemaphoreDelete(_rx2_notice);
+        modbus_rt_sem_destroy(&_rx2_notice);
     }
 #endif
 }
@@ -131,25 +129,19 @@ void uart_sem_reset(uart_type_dev *serial) {
     }
 #if defined(RTU_USING_UART0)
     if(serial->uartPort == 0) {
-        if(uxSemaphoreGetCount(_rx0_notice)) {
-            xSemaphoreTake(_rx0_notice, 0);
-        }
+        modbus_rt_sem_reset(&_rx0_notice);
     }
 #endif
 
 #if defined(RTU_USING_UART1)
     if(serial->uartPort == 1) {
-        if(uxSemaphoreGetCount(_rx1_notice)) {
-            xSemaphoreTake(_rx1_notice, 0);
-        }
+        modbus_rt_sem_reset(&_rx1_notice);
     }
 #endif
 
 #if defined(RTU_USING_UART2)
     if(serial->uartPort == 2) {
-        if(uxSemaphoreGetCount(_rx2_notice)) {
-            xSemaphoreTake(_rx2_notice, 0);
-        }
+        modbus_rt_sem_reset(&_rx1_notice);
     }
 #endif
 }
@@ -165,19 +157,19 @@ void uart_sem_give(uart_type_dev *serial) {
     }
 #if defined(RTU_USING_UART0)
     if(serial->uartPort == 0) {
-        xSemaphoreGive(_rx0_notice);
+        modbus_rt_sem_post(&_rx0_notice);
     }
 #endif
 
 #if defined(RTU_USING_UART1)
     if(serial->uartPort == 1) {
-        xSemaphoreGive(_rx1_notice);
+        modbus_rt_sem_post(&_rx1_notice);
     }
 #endif
 
 #if defined(RTU_USING_UART2)
     if(serial->uartPort == 2) {
-        xSemaphoreGive(_rx2_notice);
+        modbus_rt_sem_post(&_rx2_notice);
     }
 #endif
 }
@@ -195,19 +187,19 @@ int uart_sem_take(uart_type_dev *serial, int32_t time) {
     }
 #if defined(RTU_USING_UART0)
     if(serial->uartPort == 0) {
-        return xSemaphoreTake(_rx0_notice, time);
+        return modbus_rt_sem_wait_time(&_rx0_notice, time);
     }
 #endif
 
 #if defined(RTU_USING_UART1)
     if(serial->uartPort == 1) {
-        return xSemaphoreTake(_rx1_notice, time);
+        return modbus_rt_sem_wait_time(&_rx1_notice, time);
     }
 #endif
 
 #if defined(RTU_USING_UART2)
     if(serial->uartPort == 2) {
-        return xSemaphoreTake(_rx2_notice, time);
+        return modbus_rt_sem_wait_time(&_rx2_notice, time);
     }
 #endif
     return -1;

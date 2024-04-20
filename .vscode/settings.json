@@ -2,6 +2,7 @@
     "files.associations": {
         "thread": "c",
         "device_data.h": "c",
-        "xutility": "c"
+        "xutility": "c",
+        "freertos_uart.h": "c"
     }
 }

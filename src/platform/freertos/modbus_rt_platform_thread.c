@@ -65,7 +65,6 @@ int modbus_rt_mutex_destroy(modbus_rt_mutex_t* m) {
     return 0;
 }
 
-
 int modbus_rt_sem_init(modbus_rt_sem_t* m) {
     m->sem = xSemaphoreCreateCounting(10, 0);
     return 0;
@@ -73,8 +72,21 @@ int modbus_rt_sem_init(modbus_rt_sem_t* m) {
 int modbus_rt_sem_wait(modbus_rt_sem_t* m) {
     return xSemaphoreTake(m->sem, portMAX_DELAY);
 }
+int modbus_rt_sem_wait_time(modbus_rt_sem_t* m, int32_t time) {
+    return xSemaphoreTake(m->sem, time);
+}
 int modbus_rt_sem_post(modbus_rt_sem_t* m) {
     return xSemaphoreGive(m->sem);
+}
+int modbus_rt_sem_post_from_isr(modbus_rt_sem_t* m) {
+    portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+    return xSemaphoreGiveFromISR(m->sem, &xHigherPriorityTaskWoken);
+}
+int modbus_rt_sem_reset(modbus_rt_sem_t* m) {
+    while(uxSemaphoreGetCount(m->sem) > 0) {
+        xSemaphoreTake(m->sem, 0);
+    }
+    return 0;
 }
 int modbus_rt_sem_destroy(modbus_rt_sem_t* m) {
     vSemaphoreDelete(m->sem);

@@ -13,9 +13,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include "FreeRTOS.h"
-#include "task.h"
-#include "semphr.h"
+
+#include "modbus_rt_platform_thread.h"
+#include "modbus_rt_platform_memory.h"
 
 #include "driver/gpio.h"
 #include "driver/uart.h"
@@ -46,21 +46,21 @@ typedef esp32_uart_t  uart_type_dev;
     #define UART0_RX_PIN    44
     #define UART0_RTS_PIN    UART_PIN_NO_CHANGE
     #define UART0_CTS_PIN    UART_PIN_NO_CHANGE
-    extern SemaphoreHandle_t _rx0_notice;
+    extern modbus_rt_sem_t _rx0_notice;
 #endif
 #ifdef RTU_USING_UART1
     #define UART1_TX_PIN    18
     #define UART1_RX_PIN    17
     #define UART1_RTS_PIN    UART_PIN_NO_CHANGE
     #define UART1_CTS_PIN    UART_PIN_NO_CHANGE
-    extern SemaphoreHandle_t _rx1_notice;
+    extern modbus_rt_sem_t _rx1_notice;
 #endif
 #ifdef RTU_USING_UART2
     #define UART2_TX_PIN    18
     #define UART2_RX_PIN    17
     #define UART2_RTS_PIN    UART_PIN_NO_CHANGE
     #define UART2_CTS_PIN    UART_PIN_NO_CHANGE
-    extern SemaphoreHandle_t _rx2_notice;
+    extern modbus_rt_sem_t _rx2_notice;
 #endif
 
 extern uart_type_dev *os_uart_open(const char *devname, int baudrate, int bytesize, char parity, int stopbits, int xonxoff);
