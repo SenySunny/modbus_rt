@@ -15,7 +15,6 @@ extern "C" {
 #endif
 
 #include "modbus_rt_platform_thread.h"
-#include "modbus_rt_platform_memory.h"
 
 #include "driver/gpio.h"
 #include "driver/uart.h"

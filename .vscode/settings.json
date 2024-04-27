@@ -3,6 +3,10 @@
         "thread": "c",
         "device_data.h": "c",
         "xutility": "c",
-        "freertos_uart.h": "c"
+        "freertos_uart.h": "c",
+        "rtthread.h": "c",
+        "signal.h": "c",
+        "stdint.h": "c",
+        "modbus_rt_platform_thread.h": "c"
     }
 }

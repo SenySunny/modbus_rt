@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -48,7 +49,9 @@ int modbus_rt_mutex_destroy(modbus_rt_mutex_t* m);
 
 int modbus_rt_sem_init(modbus_rt_sem_t* m);
 int modbus_rt_sem_wait(modbus_rt_sem_t* m);
+int modbus_rt_sem_wait_time(modbus_rt_sem_t* m, int32_t time);
 int modbus_rt_sem_post(modbus_rt_sem_t* m);
+int modbus_rt_sem_reset(modbus_rt_sem_t* m);
 int modbus_rt_sem_destroy(modbus_rt_sem_t* m);
 
 
