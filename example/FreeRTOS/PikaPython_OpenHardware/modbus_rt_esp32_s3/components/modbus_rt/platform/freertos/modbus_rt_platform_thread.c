@@ -44,7 +44,11 @@ void modbus_rt_thread_destroy(modbus_rt_thread_t* thread) {
 }
 
 void modbus_rt_thread_sleep(unsigned int ms) {
-    vTaskDelay(ms/portTICK_PERIOD_MS);
+    int delay_ticks = ms/portTICK_PERIOD_MS;
+    if(delay_ticks <= 0) {
+        delay_ticks = 1;
+    }
+    vTaskDelay(delay_ticks);
 }
 
 int modbus_rt_mutex_init(modbus_rt_mutex_t* m) {

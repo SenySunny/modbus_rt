@@ -141,7 +141,7 @@ void uart_sem_reset(uart_type_dev *serial) {
 
 #if defined(RTU_USING_UART2)
     if(serial->uartPort == 2) {
-        modbus_rt_sem_reset(&_rx1_notice);
+        modbus_rt_sem_reset(&_rx2_notice);
     }
 #endif
 }
@@ -402,7 +402,11 @@ int os_uart_receive(uart_type_dev *serial, uint8_t *buf, int bufsz, int timeout,
             continue;
         }
         //挂起, 等待信号量, 即等待设备接收到数据, 在超时时间内没有接收到数据则直接返回超时(返回0), 如果接收到数据, 则把超时值修改为单字节超时数据
-        if(uart_sem_take(serial, timeout/portTICK_PERIOD_MS) != 1) {
+        int timeout_ticks = ms/portTICK_PERIOD_MS;
+        if(timeout_ticks <= 0) {
+            timeout_ticks = 1;
+        }
+        if(uart_sem_take(serial, timeout_ticks) != 1) {
             break;
         }
         timeout = bytes_timeout;
