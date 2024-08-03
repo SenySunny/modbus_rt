@@ -112,9 +112,6 @@ int modbus_rt_tcp_client_init(char* ipaddr, unsigned int port, char* saddr, unsi
 
 int modbus_rt_net_addr2ip(char* saddr, char *ip)
 {
-#if defined(_WIN32)     //确保再没有创建socket的时候可以使用getaddrinfo函数
-    modbus_rt_init_winsock();
-#endif
     struct addrinfo hints, *addr_list, *cur;
     struct sockaddr_in* ipv4 = NULL;
 
@@ -136,9 +133,6 @@ int modbus_rt_net_addr2ip(char* saddr, char *ip)
         inet_ntop(AF_INET, &(ipv4->sin_addr), ip, INET_ADDRSTRLEN);
     }
     freeaddrinfo(addr_list);
-#if defined(_WIN32)
-    modbus_rt_cleanup_winsock();
-#endif
     return MODBUS_RT_EOK;
 }
 #endif

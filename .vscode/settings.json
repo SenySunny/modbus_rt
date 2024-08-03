@@ -7,7 +7,8 @@
     "rtthread.h": "c",
     "signal.h": "c",
     "stdint.h": "c",
-    "modbus_rt_platform_thread.h": "c"
+    "modbus_rt_platform_thread.h": "c",
+    "modbus_rtu.h": "c"
   },
   "C_Cpp_Runner.cCompilerPath": "gcc",
   "C_Cpp_Runner.cppCompilerPath": "g++",
