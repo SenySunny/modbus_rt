@@ -14,6 +14,7 @@ set(MODBUS_FILE
     ../../../src/agile_modbus/agile_modbus_tcp.c 
     ../../../src/modbus_rt/modbus_ascii.c
     ../../../src/modbus_rt/modbus_data_trans.c
+    ../../../src/modbus_rt/modbus_p2p.c
     ../../../src/modbus_rt/modbus_rtu.c
     ../../../src/modbus_rt/modbus_slave.c
     ../../../src/modbus_rt/modbus_tcp.c
