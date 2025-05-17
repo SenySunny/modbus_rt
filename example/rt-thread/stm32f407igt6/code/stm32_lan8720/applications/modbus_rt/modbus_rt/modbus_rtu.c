@@ -1609,7 +1609,7 @@ int modbus_rtu_set_pre_ans_callback(rtu_modbus_device_t dev, int (*pre_ans)(agil
 }
 
 /**
- * @brief   modbus_rtu_set_done_callback:       设置slave的应答前回调函数
+ * @brief   modbus_rtu_set_done_callback:       设置slave的应答后回调函数
  * @param   dev:                                rtu_modbus_device_t 设备
  * @param   done:                               回调函数
  * @return  int:                                MODBUS_RT_EOK：成功，其他：失败

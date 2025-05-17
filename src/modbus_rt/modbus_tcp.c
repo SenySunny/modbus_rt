@@ -1278,7 +1278,7 @@ int modbus_tcp_set_pre_ans_callback(tcp_modbus_device_t dev, int (*pre_ans)(agil
 }
 
 /**
- * @brief   modbus_tcp_set_done_callback:       设置slave的应答前回调函数
+ * @brief   modbus_tcp_set_done_callback:       设置slave的应答后回调函数
  * @param   dev:                                tcp_modbus_device_t设备
  * @param   done:                               回调函数
  * @return  int:                                MODBUS_RT_EOK：成功，其他：失败
