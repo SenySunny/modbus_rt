@@ -70,6 +70,15 @@
 
 1. modbus_rt_slave_test测试程序会运行三个modbus示例，分别为modbus rtu slave， modbus tcp slave和modbus tcp slave over udp。我们可以通过任意一种modbus与其进行通信，这里我们直接用第二个案例pikapython_test来测试（当然也可以用其他软件或者设备进行通信，比如：modbus poll软件）。直接用QT打开工程修改电脑上的串口号和电脑所用网卡的ip地址，编译即可。
 
+
+Tips:
+modbus_rt_slave_test如果无法运行：  
+需要安装 [Microsoft Visual C++ 2010 SP1 Redistributable Package x86](https://www.microsoft.com/en-in/download/details.aspx?id=26999)    
+
+如果之后还提示缺 VCRUNTIME140.dll 或 UCRT，
+再装：[Latest Microsoft Visual C++ Redistributable x86](https://aka.ms/vc14/vc_redist.x86.exe)  
+
+
 ![slave_demo_qt](img/slave_demo_qt.png)
 
 2. 一、介绍
